@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Legajo · prototipo de expediente verificable</title>
+<style>
+:root{--bg:#FAF6EC;--fg:#14233A;--mut:#5B6678;--line:#D9CFB8;--pri:#12355B;--ok:#1E7F52;--warn:#9A6B00;--bad:#A8321F;--okb:#DDF1E6;--warnb:#FBEBC4;--badb:#F8DDD7;--nab:#E7E3D8;--panel:#FFFDF8}
+@media(prefers-color-scheme:dark){:root{--bg:#0F1A2B;--fg:#EDE7D7;--mut:#A3AEC0;--line:#2D3C55;--pri:#8DB6E8;--ok:#6FD3A0;--warn:#F0C25A;--bad:#F2988A;--okb:#17382B;--warnb:#3E3213;--badb:#46211B;--nab:#26324A;--panel:#14223A}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:700;line-height:1.2;margin:0}
+a{color:var(--pri)}
+header,main{max-width:1060px;margin:0 auto;padding:0 18px}
+header{padding-top:22px;padding-bottom:14px;border-bottom:3px double var(--line)}
+header h1{font-size:2.1rem;color:var(--pri)}
+header p{margin:.3rem 0 .6rem;color:var(--mut);max-width:62ch}
+nav a{margin-right:16px;font-weight:600}
+.aviso{background:var(--warnb);color:var(--fg);border-left:5px solid var(--warn);padding:10px 14px;margin:16px 0;font-size:.93rem}
+section{padding:22px 0;border-bottom:1px solid var(--line)}
+section>h2{font-size:1.4rem;margin-bottom:4px}
+.sub{color:var(--mut);margin:0 0 14px;max-width:70ch}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;gap:5px;align-items:center;padding:2px 9px;border-radius:99px;font-size:.82rem;font-weight:600;white-space:nowrap}
+.ok{background:var(--okb);color:var(--ok)}.warn{background:var(--warnb);color:var(--warn)}.bad{background:var(--badb);color:var(--bad)}.na{background:var(--nab);color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--mut)}
+.grid{display:grid;grid-template-columns:260px 1fr;gap:26px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.alist{list-style:none;margin:0;padding:0}
+.alist button{width:100%;text-align:left;background:none;border:0;border-left:4px solid transparent;padding:9px 10px;font:inherit;color:inherit;cursor:pointer;border-bottom:1px solid var(--line)}
+.alist button[aria-current=true]{border-left-color:var(--pri);background:var(--panel);font-weight:600}
+button.act,label.act{background:var(--pri);color:var(--bg);border:0;border-radius:6px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;display:inline-block}
+button.sec{background:none;color:var(--pri);border:1.5px solid var(--pri);border-radius:6px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}
+:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+.tl{list-style:none;margin:0;padding:0 0 0 18px;border-left:2px solid var(--line)}
+.tl li{position:relative;padding:0 0 16px 18px}
+.tl li::before{content:attr(data-n);position:absolute;left:-33px;top:0;width:26px;height:26px;border-radius:50%;background:var(--pri);color:var(--bg);font-size:.8rem;font-weight:700;display:grid;place-items:center}
+.tl b{display:block}.tl small{color:var(--mut);display:block}
+.gap{margin-top:5px}
+input[type=date]{font:inherit;padding:7px;border:1.5px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg)}
+textarea{width:100%;min-height:110px;font:12px/1.4 ui-monospace,Consolas,monospace;background:var(--panel);color:var(--fg);border:1.5px solid var(--line);border-radius:6px;padding:8px}
+.hash{font:13px ui-monospace,Consolas,monospace;word-break:break-all;background:var(--panel);padding:8px 10px;border:1px dashed var(--line);margin:10px 0}
+.leg{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px;font-size:.85rem}
+details{margin-top:6px}summary{cursor:pointer;font-weight:600}
+footer{max-width:1060px;margin:0 auto;padding:18px;color:var(--mut);font-size:.88rem}
+</style></head><body>
+<header>
+<h1>Legajo</h1>
+<p>Prototipo del expediente verificable de un lote de bovinos: identidad, movimientos y sanidad, con la fuente y el nivel de confianza de cada dato.</p>
+<nav><a href="presentacion/Legajo_Presentacion.pdf">Presentación (PDF)</a><a href="#sustento">Sustento y límites</a></nav>
+<div class="aviso"><b>Datos simulados.</b> Todo lo que ves es ficticio. Esta herramienta evalúa evidencias, no certifica: la certificación corresponde a SENASA y a los organismos competentes.</div>
+</header>
+<main>
+<section id="lote">
+<h2>1. Lote de faena</h2>
+<p class="sub" id="lotetxt"></p>
+<div class="row"><label><input type="checkbox" id="buyer"> Ver como comprador (datos mínimos: se oculta el titular)</label></div>
+<div class="leg" aria-label="Niveles de confianza">
+<span class="chip na">Declarado: lo afirma el actor</span><span class="chip warn">Registrado: consta en un registro oficial</span><span class="chip ok">Contrastado: dos fuentes coinciden</span><span class="chip ok">Verificado: lo validó un tercero (no incluido)</span></div>
+</section>
+
+<section id="prep">
+<h2>2. Preparación del lote</h2>
+<p class="sub">Cada regla muestra su resultado y por qué. Los números salen de código, no de un modelo de IA.</p>
+<table><thead><tr><th>Regla</th><th>Resultado</th><th>Detalle</th></tr></thead><tbody id="rules"></tbody></table>
+<p>Estado del expediente: <span id="estado"></span></p>
+<h3 style="margin-top:14px;font-size:1.05rem">Datos faltantes o con brechas</h3>
+<ul id="gaps"></ul>
+</section>
+
+<section id="exp">
+<h2>3. Expediente por animal</h2>
+<p class="sub">Elegí un animal para ver su historial y las inconsistencias detectadas.</p>
+<div class="grid"><ul class="alist" id="alist"></ul><div id="detail" aria-live="polite"></div></div>
+</section>
+
+<section id="san">
+<h2>4. Sanidad: adjuntar documentos</h2>
+<p class="sub">Adjuntá un documento (ej. constancia de vacunación). Se calcula su huella en tu navegador; el archivo no se sube a ningún servidor.</p>
+<div class="row"><label class="act">Elegir archivo<input type="file" id="file" hidden></label>
+<label>Vence el <input type="date" id="vence" value="2027-03-31"></label></div>
+<table style="margin-top:10px"><tbody id="docs"><tr><td>Todavía no hay documentos adjuntos.</td></tr></tbody></table>
+</section>
+
+<section id="sello">
+<h2>5. Emitir y verificar el expediente</h2>
+<p class="sub">Se emite un archivo JSON con una huella SHA-256 (sello de integridad). Si alguien cambia un dato, la huella ya no coincide. La huella prueba que el contenido no cambió, no que sea verdadero.</p>
+<div class="row"><button class="act" id="emit">Emitir expediente</button><button class="sec" id="dl" disabled>Descargar JSON</button></div>
+<div class="hash" id="hash" hidden></div>
+<h3 style="margin-top:14px;font-size:1.05rem">Verificar un expediente</h3>
+<textarea id="ver" aria-label="JSON del expediente a verificar" placeholder="Pegá acá un expediente emitido (o emití uno y se carga solo)."></textarea>
+<div class="row" style="margin-top:8px"><button class="sec" id="chk">Verificar</button><button class="sec" id="tamper">Alterar un dato y verificar</button><span id="res" aria-live="polite"></span></div>
+</section>
+
+<section id="sustento">
+<h2>Sustento y límites</h2>
+<details open><summary>Supuestos</summary><ul>
+<li>Los datos de animales, DT-e y establecimientos son <b>DATO SIMULADO</b>.</li>
+<li>SUPUESTO: no hay una API pública de SENASA para terceros; el ingreso real sería por archivos que descarga el productor.</li>
+<li>SUPUESTO: el productor paga primero (a validar contra el frigorífico/exportador).</li></ul></details>
+<details><summary>Límites del prototipo</summary><ul>
+<li>No evalúa evidencia ambiental (deforestación, EUDR): figura como "no evaluada".</li>
+<li>No hay firma digital ni verificador externo: el nivel "verificado" no se puede alcanzar acá.</li>
+<li>No consulta SENASA ni valida contra registros oficiales.</li>
+<li>El sello SHA-256 prueba integridad, no veracidad. No usa blockchain.</li></ul></details>
+<details><summary>Fuentes</summary><ul>
+<li><a href="https://www.argentina.gob.ar/senasa/sistema-de-identificacion-electronica-de-animales">SENASA, identificación electrónica</a></li>
+<li><a href="https://environment.ec.europa.eu/topics/forests/deforestation/regulation-deforestation-free-products_en">Comisión Europea, EUDR</a></li>
+<li><a href="https://www.globalforestwatch.org/">Global Forest Watch</a></li></ul>
+<p>Detalle completo en las carpetas de documentación del repositorio.</p></details>
+</section>
+</main>
+<footer>Legajo es un prototipo de la Ideathon NEA Tech 2026. Código abierto, sin servidor: todo corre en tu navegador.</footer>
+<script>
+const $=s=>document.querySelector(s),FAENA='2026-11-04';
+const P={A:'Establecimiento A',B:'Establecimiento B',C:'Establecimiento C',F:'Frigorífico'};
+const m=(f,t,o,i,d)=>({f,t,o,i,d});
+const A=[
+{id:'AR-000123',tipo:'electrónica',own:'Productor López',nac:'2025-03-10',mv:[m('A','B','2025-09-02','2025-09-03','DT-e 0001'),m('B','C','2026-03-15','2026-03-16','DT-e 0002'),m('C','F','2026-10-30','2026-10-31','DT-e 0003')]},
+{id:'AR-000124',tipo:'electrónica',own:'Productor López',nac:'2025-03-12',mv:[m('A','B','2025-09-02','2025-09-03','DT-e 0001'),m('B','C','2026-03-15','2026-03-16',null),m('C','F','2026-10-30','2026-10-31','DT-e 0003')]},
+{id:'AR-000125',tipo:'analógica (CUIG)',own:'Productor Gómez',nac:'2024-11-20',mv:[m('A','B','2025-08-10','2025-08-11','DT-e 0007'),m('C','F','2026-10-28','2026-10-29','DT-e 0011')]},
+{id:'AR-000126',tipo:'electrónica',own:'Productor Gómez',nac:'2025-04-01',mv:[m('A','B','2026-03-15','2026-03-10','DT-e 0012'),m('B','F','2026-10-29','2026-10-30','DT-e 0013')]},
+{id:'AR-000127',tipo:'analógica (CUIG)',own:'Productor Gómez',nac:'2024-12-05',mv:[m('A','B','2025-08-10','2025-08-11','DT-e 0007'),m('B','F','2026-10-28','2026-10-29','DT-e 0014')]},
+{id:'AR-000128',tipo:'electrónica',own:null,nac:'2025-05-02',mv:[m('A','B','2025-09-02','2025-09-03','DT-e 0001'),m('B','F','2026-10-30','2026-10-31','DT-e 0015')]}];
+let docs=[],sealed=null,cur=0;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const chip=(c,t)=>`<span class="chip ${c}">${{ok:'✔',warn:'▲',bad:'✖',na:'–'}[c]} ${t}</span>`;
+const conf={declarado:'na',registrado:'warn',contrastado:'ok',verificado:'ok'};
+const owner=a=>!a.own?'sin dato':$('#buyer').checked?'oculto por consentimiento':a.own;
+function check(a){let l='A',g=[];if(!a.own)g.push('Falta el propietario');
+for(const x of a.mv){if(x.f!==l)g.push(`Falta el movimiento ${P[l]} → ${P[x.f]}`);
+if(!x.d)g.push(`Sin DT-e en ${P[x.f]} → ${P[x.t]}`);
+if(x.i<x.o)g.push(`Fechas incoherentes en ${P[x.f]} → ${P[x.t]}: ingresa antes de salir`);l=x.t}
+if(l!=='F')g.push('No consta el ingreso al frigorífico');return g}
+function events(a){const e=[{t:'Nacimiento e identificación',d:a.nac,src:'Constancia de identificación SENASA (simulada)',c:'registrado'},
+{t:'Titular: '+(a.own||'sin dato'),d:a.nac,src:a.own?'Declaración del productor':'—',c:'declarado'}];
+if(!a.own)e.pop();
+a.mv.forEach(x=>{const ok=x.d&&x.i>=x.o;e.push({t:`${P[x.f]} → ${P[x.t]}`,d:`salida ${x.o} · ingreso ${x.i}`,src:x.d||'Sin documento',c:!x.d?'declarado':ok?'contrastado':'registrado'})});return e}
+function rules(){const gi=A.filter(a=>!a.own).length,gm=A.filter(a=>a.mv&&check(a).some(g=>!g.startsWith('Falta el propietario'))).length;
+const el=A.filter(a=>a.tipo==='electrónica').length,pct=Math.round(el/A.length*1000)/10;
+const sd=!docs.length?['bad','faltante','No hay documentos de sanidad adjuntos']:docs.some(d=>d.vence<FAENA)?['bad','vencida','Hay documentos vencidos a la fecha de faena']:['ok','vigente','Documentos vigentes a la fecha de faena'];
+return[
+{n:'Identidad animal',s:gi?'warn':'ok',r:gi?'Incompleta':'Verificada',t:gi?`${gi} animal sin propietario`:'Todos con identificador y titular'},
+{n:'Historial de movimientos',s:gm?'warn':'ok',r:gm?'Con brechas':'Completo',t:gm?`${gm} de ${A.length} animales con brechas`:'Sin brechas'},
+{n:'Documentación sanitaria',s:sd[0],r:sd[1],t:sd[2]},
+{n:'Electrónica vs. analógica',s:'na',r:'Informado',t:`${pct}% electrónica, ${Math.round((100-pct)*10)/10}% analógica (rodeo mixto)`},
+{n:'Fuente por cada dato',s:'ok',r:'Cumplida',t:'Ningún dato se muestra sin fuente (si faltara, no se emite)'},
+{n:'Habilitación de establecimientos',s:'na',r:'No evaluada',t:'Fuera del alcance del prototipo'},
+{n:'Evidencia ambiental (UE)',s:'na',r:'No evaluada',t:'Fuera del alcance del prototipo'},
+{n:'Requisitos del destino',s:'na',r:'No evaluados',t:'Requiere perfil de mercado validado'}]}
+const gaps=()=>{const g=[];A.forEach(a=>check(a).forEach(x=>g.push(`${a.id}: ${x}`)));if(!docs.length)g.push('Lote: sin documentos de sanidad');return g}
+const estado=()=>{const r=rules();return r.some(x=>x.s==='warn'||x.s==='bad'&&x.n!=='Documentación sanitaria')?'con_alertas':r.find(x=>x.n==='Documentación sanitaria').s==='bad'?'borrador':'completo'};
+function render(){const r=rules(),es=estado();
+$('#lotetxt').textContent=`LOTE-DEMO-014 · faena prevista ${FAENA} · ${A.length} animales (DATO SIMULADO)`;
+$('#rules').innerHTML=r.map(x=>`<tr><td>${x.n}</td><td>${chip(x.s,x.r)}</td><td>${x.t}</td></tr>`).join('');
+$('#estado').innerHTML=chip(es==='completo'?'ok':es==='borrador'?'na':'warn',es)+' <small>(nunca “certificado”: eso lo define un organismo competente)</small>';
+$('#gaps').innerHTML=gaps().map(g=>`<li>${esc(g)}</li>`).join('')||'<li>Sin faltantes.</li>';
+$('#alist').innerHTML=A.map((a,i)=>`<li><button data-i="${i}" aria-current="${i===cur}">${a.id}<br><small>${a.tipo} · ${check(a).length?check(a).length+' alerta(s)':'sin alertas'}</small></button></li>`).join('');
+const a=A[cur],ev=events(a),g=check(a);
+$('#detail').innerHTML=`<h3>${a.id}</h3><p>Identificación ${a.tipo} · titular: ${esc(owner(a))}</p><ol class="tl">${ev.map((e,i)=>`<li data-n="${i+1}"><b>${esc(e.t)}</b><small>${esc(e.d)}</small><small>Fuente: ${esc(e.src)}</small><span class="gap">${chip(conf[e.c],e.c)}</span></li>`).join('')}</ol>${g.length?`<p>${g.map(x=>chip('bad',esc(x))).join(' ')}</p>`:chip('ok','Sin inconsistencias detectadas')}`;
+$('#docs').innerHTML=docs.length?docs.map(d=>`<tr><td>${esc(d.nombre)}</td><td>vence ${d.vence}</td><td>${chip(d.vence<FAENA?'bad':'ok',d.vence<FAENA?'vencido':'vigente')}</td><td><small>${d.sha256.slice(0,16)}…</small></td></tr>`).join(''):'<tr><td>Todavía no hay documentos adjuntos.</td></tr>'}
+const canon=o=>Array.isArray(o)?'['+o.map(canon)+']':o&&typeof o=='object'?'{'+Object.keys(o).sort().map(k=>JSON.stringify(k)+':'+canon(o[k])).join(',')+'}':JSON.stringify(o);
+const sha=async b=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',typeof b=='string'?new TextEncoder().encode(b):b))].map(x=>x.toString(16).padStart(2,'0')).join('');
+function build(){const an=A.map(a=>({id:a.id,identificacion:a.tipo,titular:a.own||null,eventos:events(a).map(e=>({hecho:e.t,detalle:e.d,fuente:e.src,confianza:e.c})),brechas:check(a)}));
+if(an.some(x=>x.eventos.some(e=>!e.fuente)))throw new Error('Dato sin fuente: no se emite');
+return{perfil:'prototipo-ue-carne-v0',aviso:'Evaluación de evidencias. No es una certificación oficial.',datos:'SIMULADOS',lote:{id:'LOTE-DEMO-014',faena:FAENA,animales:A.length},reglas:rules().map(r=>({regla:r.n,resultado:r.r,detalle:r.t})),documentos:docs,faltantes:gaps(),animales:an,estado:estado(),generado:new Date().toISOString()}}
+$('#emit').onclick=async()=>{try{const d=build(),h=await sha(canon(d));sealed=JSON.stringify({dossier:d,sello:{alg:'SHA-256',hash:h}},null,1);
+$('#hash').hidden=false;$('#hash').textContent='Huella SHA-256: '+h;$('#ver').value=sealed;$('#dl').disabled=false;$('#res').textContent=''}catch(e){$('#res').textContent=e.message}};
+$('#dl').onclick=()=>{const u=URL.createObjectURL(new Blob([sealed],{type:'application/json'})),l=document.createElement('a');l.href=u;l.download='expediente-LOTE-DEMO-014.json';l.click();URL.revokeObjectURL(u)};
+async function verify(){const r=$('#res');try{const j=JSON.parse($('#ver').value),h=await sha(canon(j.dossier));
+r.innerHTML=h===j.sello.hash?chip('ok','Íntegro: la huella coincide'):chip('bad','Alterado: la huella no coincide')}catch(e){r.innerHTML=chip('bad','No es un expediente válido')}}
+$('#chk').onclick=verify;
+$('#tamper').onclick=()=>{const t=$('#ver').value;if(!t)return $('#res').innerHTML=chip('na','Primero emití un expediente');$('#ver').value=t.replace('AR-000123','AR-000999');verify()};
+$('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;docs.push({nombre:f.name,bytes:f.size,vence:$('#vence').value,sha256:await sha(await f.arrayBuffer())});e.target.value='';render()};
+$('#alist').onclick=e=>{const b=e.target.closest('button');if(b){cur=+b.dataset.i;render()}};
+$('#buyer').onchange=render;render();
+</script></body></html>
