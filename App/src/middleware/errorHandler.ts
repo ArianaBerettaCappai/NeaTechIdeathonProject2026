@@ -1,0 +1,17 @@
+import { NextFunction, Request, Response } from "express";
+import { AuthError } from "../services/AuthError";
+
+export function errorHandler(
+  error: unknown,
+  _req: Request,
+  res: Response,
+  _next: NextFunction
+): void {
+  if (error instanceof AuthError) {
+    res.status(error.statusCode).json({ message: error.message });
+    return;
+  }
+
+  console.error(error);
+  res.status(500).json({ message: "Error interno del servidor." });
+}
