@@ -1,5 +1,6 @@
 import cors from "cors";
 import express, { Express } from "express";
+import path from "path";
 import { env } from "./config/env";
 import { supabase } from "./config/supabaseClient";
 import { AuthController } from "./controllers/authController";
@@ -22,6 +23,9 @@ export function createApp(): Express {
 
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
   app.use("/auth", buildAuthRouter(authController, userRepository));
+
+  const frontendPath = path.resolve(__dirname, "../../Frontend");
+  app.use(express.static(frontendPath));
 
   app.use(errorHandler);
 
