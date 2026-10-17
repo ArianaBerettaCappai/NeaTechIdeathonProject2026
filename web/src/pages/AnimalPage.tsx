@@ -1,13 +1,17 @@
 import { Link, Navigate, useParams } from "react-router-dom";
 import { Badge } from "../components/Badge";
+import { EstadoDatos } from "../components/EstadoDatos";
 import { Layout } from "../components/Layout";
 import { MapaComparador } from "../components/MapaComparador";
 import { formatDate, moneda, numero } from "../lib/format";
 import { alertasDe, buscarAnimal, esAptoUE } from "../lib/ofertas";
+import { useLotes } from "../lib/senasa";
 
 export function AnimalPage() {
   const { animalId = "" } = useParams();
-  const encontrado = buscarAnimal(animalId);
+  const { lotes, error } = useLotes();
+  if (!lotes) return <EstadoDatos error={error} />;
+  const encontrado = buscarAnimal(lotes, animalId);
   if (!encontrado) return <Navigate to="/ofertas" replace />;
   const { lote, animal } = encontrado;
   const alertas = alertasDe(animal);

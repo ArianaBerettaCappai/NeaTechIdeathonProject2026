@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
+import { EstadoDatos } from "../components/EstadoDatos";
 import { Layout } from "../components/Layout";
 import { TarjetaOferta } from "../components/TarjetaOferta";
 import { Notice } from "../components/inicio/Notice";
-import { LOTES } from "../data/ofertas";
 import { moneda, numero } from "../lib/format";
 import { esAptoUE, pesoTotal, valorLote } from "../lib/ofertas";
+import { useLotes } from "../lib/senasa";
 
 const PASOS = [
   {
@@ -22,10 +23,13 @@ const PASOS = [
 ];
 
 export function InicioPage() {
-  const kg = LOTES.reduce((total, lote) => total + pesoTotal(lote), 0);
-  const animales = LOTES.reduce((total, lote) => total + lote.animales.length, 0);
-  const valor = LOTES.reduce((total, lote) => total + valorLote(lote), 0);
-  const destacado = LOTES[0];
+  const { lotes, error } = useLotes();
+  if (!lotes) return <EstadoDatos error={error} />;
+
+  const kg = lotes.reduce((total, lote) => total + pesoTotal(lote), 0);
+  const animales = lotes.reduce((total, lote) => total + lote.animales.length, 0);
+  const valor = lotes.reduce((total, lote) => total + valorLote(lote), 0);
+  const destacado = lotes[0];
   const aptosDestacado = destacado.animales.filter(esAptoUE).length;
 
   return (
@@ -51,7 +55,7 @@ export function InicioPage() {
           <dl className="hero-stats">
             <div>
               <dt>Lotes</dt>
-              <dd>{numero.format(LOTES.length)}</dd>
+              <dd>{numero.format(lotes.length)}</dd>
             </div>
             <div>
               <dt>Animales</dt>
@@ -107,7 +111,7 @@ export function InicioPage() {
           </Link>
         </div>
         <ul className="ofertas-grid ofertas-grid-inicio">
-          {LOTES.map((lote) => (
+          {lotes.map((lote) => (
             <li key={lote.id}>
               <TarjetaOferta lote={lote} />
             </li>

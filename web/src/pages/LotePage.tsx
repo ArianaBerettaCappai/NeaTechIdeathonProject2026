@@ -1,12 +1,16 @@
 import { Link, Navigate, useParams } from "react-router-dom";
 import { Badge } from "../components/Badge";
+import { EstadoDatos } from "../components/EstadoDatos";
 import { Layout } from "../components/Layout";
 import { formatDate, moneda, numero } from "../lib/format";
 import { alertasDe, buscarLote, esAptoUE, pesoTotal, valorLote } from "../lib/ofertas";
+import { useLotes } from "../lib/senasa";
 
 export function LotePage() {
   const { loteId = "" } = useParams();
-  const lote = buscarLote(loteId);
+  const { lotes, error } = useLotes();
+  if (!lotes) return <EstadoDatos error={error} />;
+  const lote = buscarLote(lotes, loteId);
   if (!lote) return <Navigate to="/ofertas" replace />;
 
   return (

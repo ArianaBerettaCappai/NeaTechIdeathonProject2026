@@ -1,22 +1,26 @@
 import { useMemo, useState } from "react";
+import { EstadoDatos } from "../components/EstadoDatos";
 import { Layout } from "../components/Layout";
-import { LOTES } from "../data/ofertas";
 import { moneda, numero } from "../lib/format";
 import { pesoTotal, valorLote } from "../lib/ofertas";
+import { useLotes } from "../lib/senasa";
 import { TarjetaOferta } from "../components/TarjetaOferta";
 
 type Orden = "precio" | "peso";
 
 export function OfertasPage() {
+  const { lotes: todos, error } = useLotes();
   const [provincia, setProvincia] = useState("todas");
   const [orden, setOrden] = useState<Orden>("precio");
 
-  const provincias = useMemo(() => [...new Set(LOTES.map((lote) => lote.provincia))].sort(), []);
-  const kg = LOTES.reduce((total, lote) => total + pesoTotal(lote), 0);
-  const animales = LOTES.reduce((total, lote) => total + lote.animales.length, 0);
-  const valor = LOTES.reduce((total, lote) => total + valorLote(lote), 0);
+  const provincias = useMemo(() => [...new Set((todos ?? []).map((lote) => lote.provincia))].sort(), [todos]);
+  if (!todos) return <EstadoDatos error={error} />;
 
-  const lotes = LOTES.filter((lote) => provincia === "todas" || lote.provincia === provincia).sort((a, b) =>
+  const kg = todos.reduce((total, lote) => total + pesoTotal(lote), 0);
+  const animales = todos.reduce((total, lote) => total + lote.animales.length, 0);
+  const valor = todos.reduce((total, lote) => total + valorLote(lote), 0);
+
+  const lotes = todos.filter((lote) => provincia === "todas" || lote.provincia === provincia).sort((a, b) =>
     orden === "peso" ? pesoTotal(b) - pesoTotal(a) : a.precioKg - b.precioKg
   );
 
@@ -34,7 +38,7 @@ export function OfertasPage() {
         <dl className="hero-stats">
           <div>
             <dt>Lotes</dt>
-            <dd>{numero.format(LOTES.length)}</dd>
+            <dd>{numero.format(todos.length)}</dd>
           </div>
           <div>
             <dt>Animales</dt>
@@ -97,4 +101,3 @@ export function OfertasPage() {
     </Layout>
   );
 }
-

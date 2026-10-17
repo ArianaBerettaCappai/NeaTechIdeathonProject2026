@@ -1,4 +1,3 @@
-import { LOTES } from "../data/ofertas";
 import type { AnimalOferta, Lote, Parada } from "../types";
 
 // Regla RF-3: la elegibilidad UE es un booleano simple sobre el estado sanitario.
@@ -8,10 +7,10 @@ export const valorLote = (lote: Lote): number => pesoTotal(lote) * lote.precioKg
 export const alertasDe = (animal: AnimalOferta): Parada[] =>
   animal.paradas.filter((parada) => parada.deforestacion.alerta);
 
-export const buscarLote = (id: string): Lote | undefined => LOTES.find((lote) => lote.id === id);
+export const buscarLote = (lotes: Lote[], id: string): Lote | undefined => lotes.find((lote) => lote.id === id);
 
-export function buscarAnimal(id: string): { lote: Lote; animal: AnimalOferta } | undefined {
-  for (const lote of LOTES) {
+export function buscarAnimal(lotes: Lote[], id: string): { lote: Lote; animal: AnimalOferta } | undefined {
+  for (const lote of lotes) {
     const animal = lote.animales.find((item) => item.id === id);
     if (animal) return { lote, animal };
   }
