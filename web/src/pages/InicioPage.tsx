@@ -3,8 +3,10 @@ import { EstadoDatos } from "../components/EstadoDatos";
 import { Layout } from "../components/Layout";
 import { TarjetaOferta } from "../components/TarjetaOferta";
 import { Notice } from "../components/inicio/Notice";
+import { TuRodeo } from "../components/inicio/TuRodeo";
 import { moneda, numero } from "../lib/format";
-import { esAptoUE, pesoTotal, valorLote } from "../lib/ofertas";
+import { esAptoUE, pesoTotal, valorLote, visiblesPara } from "../lib/ofertas";
+import { esVendedor } from "../lib/sesion";
 import { useLotes } from "../lib/senasa";
 
 const PASOS = [
@@ -23,14 +25,15 @@ const PASOS = [
 ];
 
 export function InicioPage() {
-  const { lotes, error } = useLotes();
-  if (!lotes) return <EstadoDatos error={error} />;
+  const { lotes: todos, productores, error } = useLotes();
+  if (!todos || !productores) return <EstadoDatos error={error} />;
 
+  const vendedor = esVendedor();
+  const lotes = visiblesPara(todos, vendedor);
   const kg = lotes.reduce((total, lote) => total + pesoTotal(lote), 0);
   const animales = lotes.reduce((total, lote) => total + lote.animales.length, 0);
   const valor = lotes.reduce((total, lote) => total + valorLote(lote), 0);
   const destacado = lotes[0];
-  const aptosDestacado = destacado.animales.filter(esAptoUE).length;
 
   return (
     <Layout>
@@ -72,32 +75,34 @@ export function InicioPage() {
           </dl>
         </div>
 
-        <aside className="hero-card" aria-label="Lote destacado">
-          <div className="hero-card-top">
-            <span className="status-dot" /> LOTE DESTACADO
-          </div>
-          <p className="lot-code">{destacado.id}</p>
-          <p className="hero-card-titulo">{destacado.titulo}</p>
-          <div className="hero-stat-grid">
-            <div>
-              <strong>{numero.format(pesoTotal(destacado))} kg</strong>
-              <span>peso total</span>
+        {destacado && (
+          <aside className="hero-card" aria-label="Lote destacado">
+            <div className="hero-card-top">
+              <span className="status-dot" /> LOTE DESTACADO
             </div>
-            <div>
-              <strong>{moneda.format(destacado.precioKg)}</strong>
-              <span>por kg</span>
+            <p className="lot-code">{destacado.id}</p>
+            <p className="hero-card-titulo">{destacado.titulo}</p>
+            <div className="hero-stat-grid">
+              <div>
+                <strong>{numero.format(pesoTotal(destacado))} kg</strong>
+                <span>peso total</span>
+              </div>
+              <div>
+                <strong>{moneda.format(destacado.precioKg)}</strong>
+                <span>por kg</span>
+              </div>
+              <div>
+                <strong>
+                  {destacado.animales.filter(esAptoUE).length}/{destacado.animales.length}
+                </strong>
+                <span>aptos UE</span>
+              </div>
             </div>
-            <div>
-              <strong>
-                {aptosDestacado}/{destacado.animales.length}
-              </strong>
-              <span>aptos UE</span>
-            </div>
-          </div>
-          <Link className="button button-light button-full" to={`/ofertas/${destacado.id}`}>
-            Ver este lote <span aria-hidden="true">→</span>
-          </Link>
-        </aside>
+            <Link className="button button-light button-full" to={`/ofertas/${destacado.id}`}>
+              Ver este lote <span aria-hidden="true">→</span>
+            </Link>
+          </aside>
+        )}
       </section>
 
       <section className="section" id="lotes">
@@ -110,14 +115,20 @@ export function InicioPage() {
             Ver todas las ofertas →
           </Link>
         </div>
-        <ul className="ofertas-grid ofertas-grid-inicio">
-          {lotes.map((lote) => (
-            <li key={lote.id}>
-              <TarjetaOferta lote={lote} />
-            </li>
-          ))}
-        </ul>
+        {lotes.length ? (
+          <ul className="ofertas-grid ofertas-grid-inicio">
+            {lotes.map((lote) => (
+              <li key={lote.id}>
+                <TarjetaOferta lote={lote} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="empty-state">Todavía no hay animales exportables a la UE publicados.</p>
+        )}
       </section>
+
+      {vendedor && <TuRodeo productores={productores} />}
 
       <section className="section" id="como-comprar">
         <div className="section-heading">

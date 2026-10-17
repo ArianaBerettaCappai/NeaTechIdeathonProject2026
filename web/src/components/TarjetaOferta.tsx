@@ -8,6 +8,7 @@ export function TarjetaOferta({ lote }: { lote: Lote }) {
   const todosAptos = lote.animales.every(esAptoUE);
   return (
     <Link className="oferta-card" to={`/ofertas/${lote.id}`}>
+      {lote.imagenUrl && <img className="oferta-imagen" src={lote.imagenUrl} alt={`Foto del lote ${lote.titulo}`} loading="lazy" />}
       <span className="oferta-top">
         <span className="oferta-code">{lote.id}</span>
         <Badge nivel={todosAptos ? "ok" : "warn"}>{todosAptos ? "Apto UE" : "Revisar"}</Badge>

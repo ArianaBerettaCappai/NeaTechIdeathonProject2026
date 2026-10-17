@@ -6,6 +6,7 @@ import { AnimalPage } from "./pages/AnimalPage";
 import { InicioPage } from "./pages/InicioPage";
 import { LotePage } from "./pages/LotePage";
 import { OfertasPage } from "./pages/OfertasPage";
+import { VenderPage } from "./pages/VenderPage";
 
 // Al cambiar de página vuelve arriba, salvo que la navegación apunte a un ancla.
 function ScrollAlCambiarDePagina() {
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/ofertas" element={<OfertasPage />} />
         <Route path="/ofertas/animal/:animalId" element={<AnimalPage />} />
         <Route path="/ofertas/:loteId" element={<LotePage />} />
+        <Route path="/vender" element={<VenderPage />} />
         <Route path="/acceso" element={<AccesoPage />} />
         <Route path="*" element={<NoEncontrada />} />
       </Routes>

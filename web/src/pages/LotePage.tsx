@@ -2,16 +2,19 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { Badge } from "../components/Badge";
 import { EstadoDatos } from "../components/EstadoDatos";
 import { Layout } from "../components/Layout";
+import { ImagenLote } from "../components/lote/ImagenLote";
 import { formatDate, moneda, numero } from "../lib/format";
 import { alertasDe, buscarLote, esAptoUE, pesoTotal, valorLote } from "../lib/ofertas";
+import { esVendedor } from "../lib/sesion";
 import { useLotes } from "../lib/senasa";
 
 export function LotePage() {
   const { loteId = "" } = useParams();
-  const { lotes, error } = useLotes();
+  const { lotes, error, recargar } = useLotes();
   if (!lotes) return <EstadoDatos error={error} />;
   const lote = buscarLote(lotes, loteId);
   if (!lote) return <Navigate to="/ofertas" replace />;
+  const vendedor = esVendedor();
 
   return (
     <Layout>
@@ -46,6 +49,9 @@ export function LotePage() {
           </div>
         </dl>
       </header>
+
+      {lote.imagenUrl && <img className="lote-imagen" src={lote.imagenUrl} alt={`Foto del lote ${lote.titulo}`} />}
+      {vendedor && <ImagenLote lote={lote} onSubida={recargar} />}
 
       <div className="table-wrap panel">
         <table>

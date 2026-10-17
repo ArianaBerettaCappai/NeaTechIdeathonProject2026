@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { EstadoDatos } from "../components/EstadoDatos";
 import { Layout } from "../components/Layout";
 import { moneda, numero } from "../lib/format";
-import { pesoTotal, valorLote } from "../lib/ofertas";
+import { pesoTotal, valorLote, visiblesPara } from "../lib/ofertas";
+import { esVendedor } from "../lib/sesion";
 import { useLotes } from "../lib/senasa";
 import { TarjetaOferta } from "../components/TarjetaOferta";
 
@@ -13,14 +14,16 @@ export function OfertasPage() {
   const [provincia, setProvincia] = useState("todas");
   const [orden, setOrden] = useState<Orden>("precio");
 
-  const provincias = useMemo(() => [...new Set((todos ?? []).map((lote) => lote.provincia))].sort(), [todos]);
+  const vendedor = esVendedor();
+  const visibles = useMemo(() => (todos ? visiblesPara(todos, vendedor) : []), [todos, vendedor]);
+  const provincias = useMemo(() => [...new Set(visibles.map((lote) => lote.provincia))].sort(), [visibles]);
   if (!todos) return <EstadoDatos error={error} />;
 
-  const kg = todos.reduce((total, lote) => total + pesoTotal(lote), 0);
-  const animales = todos.reduce((total, lote) => total + lote.animales.length, 0);
-  const valor = todos.reduce((total, lote) => total + valorLote(lote), 0);
+  const kg = visibles.reduce((total, lote) => total + pesoTotal(lote), 0);
+  const animales = visibles.reduce((total, lote) => total + lote.animales.length, 0);
+  const valor = visibles.reduce((total, lote) => total + valorLote(lote), 0);
 
-  const lotes = todos.filter((lote) => provincia === "todas" || lote.provincia === provincia).sort((a, b) =>
+  const lotes = visibles.filter((lote) => provincia === "todas" || lote.provincia === provincia).sort((a, b) =>
     orden === "peso" ? pesoTotal(b) - pesoTotal(a) : a.precioKg - b.precioKg
   );
 
@@ -38,7 +41,7 @@ export function OfertasPage() {
         <dl className="hero-stats">
           <div>
             <dt>Lotes</dt>
-            <dd>{numero.format(todos.length)}</dd>
+            <dd>{numero.format(visibles.length)}</dd>
           </div>
           <div>
             <dt>Animales</dt>
