@@ -21,7 +21,7 @@ class SenasaService {
         const saved = await this.senasaRepository.saveAnimalsForProducer(mockResult.productor, mockResult.establecimientos, mockResult.animales);
         const animales = saved.animales;
         const totalAnimales = animales.length;
-        const aptos = animales.filter((a) => a.estadoSanitario === "Apto").length;
+        const aptos = animales.filter((a) => a.estadoSanitario === "Aprobado").length;
         const observados = animales.filter((a) => a.estadoSanitario === "Observado").length;
         const conAlertaDeforestacionPre2020 = animales.filter((a) => a.geolocalizacionCrianza.zonaDeforestadaPre2020).length;
         return {
@@ -48,7 +48,7 @@ class SenasaService {
             return {
                 animales,
                 totalAnimales: animales.length,
-                aptos: animales.filter((a) => a.estadoSanitario === "Apto").length,
+                aptos: animales.filter((a) => a.estadoSanitario === "Aprobado").length,
                 observados: animales.filter((a) => a.estadoSanitario === "Observado")
                     .length,
                 conAlertaDeforestacionPre2020: animales.filter((a) => a.geolocalizacionCrianza.zonaDeforestadaPre2020).length,
@@ -77,7 +77,7 @@ class SenasaService {
             establecimientos,
             animales,
             totalAnimales: animales.length,
-            aptos: animales.filter((a) => a.estadoSanitario === "Apto").length,
+            aptos: animales.filter((a) => a.estadoSanitario === "Aprobado").length,
             observados: animales.filter((a) => a.estadoSanitario === "Observado")
                 .length,
             conAlertaDeforestacionPre2020: animales.filter((a) => a.geolocalizacionCrianza.zonaDeforestadaPre2020).length,

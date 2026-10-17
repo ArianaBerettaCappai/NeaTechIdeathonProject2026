@@ -4,13 +4,17 @@ import path from "path";
 import { env } from "./config/env";
 import { supabase } from "./config/supabaseClient";
 import { AuthController } from "./controllers/authController";
+import { LoteController } from "./controllers/loteController";
 import { SenasaController } from "./controllers/senasaController";
 import { errorHandler } from "./middleware/errorHandler";
+import { SupabaseLoteRepository } from "./repositories/SupabaseLoteRepository";
 import { SupabaseSenasaRepository } from "./repositories/SupabaseSenasaRepository";
 import { SupabaseUserRepository } from "./repositories/SupabaseUserRepository";
 import { buildAuthRouter } from "./routes/authRoutes";
+import { buildLoteRouter } from "./routes/loteRoutes";
 import { buildSenasaRouter } from "./routes/senasaRoutes";
 import { AuthService } from "./services/AuthService";
+import { LoteService } from "./services/LoteService";
 import { SenasaService } from "./services/SenasaService";
 
 export function createApp(): Express {
@@ -30,10 +34,16 @@ export function createApp(): Express {
   const senasaController = new SenasaController(senasaService);
   const senasaRouter = buildSenasaRouter(senasaController);
 
+  const loteRepository = new SupabaseLoteRepository(supabase);
+  const loteService = new LoteService(senasaRepository, loteRepository);
+  const loteController = new LoteController(loteService);
+  const loteRouter = buildLoteRouter(loteController);
+
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
   app.use("/auth", buildAuthRouter(authController, userRepository));
   app.use("/senasa", senasaRouter);
   app.use("/api/senasa", senasaRouter);
+  app.use("/api/senasa/lotes", loteRouter);
 
   const frontendPath = path.resolve(__dirname, "../../Frontend");
   app.use(express.static(frontendPath));

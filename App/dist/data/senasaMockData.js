@@ -356,7 +356,7 @@ const ANIMALES_SEED = [
         establecimientoNacimientoRenspa: exports.E1,
         fechaIdentificacion: "2026-02-20",
         pesoKg: 340,
-        estadoSanitario: "Apto",
+        estadoSanitario: "Aprobado",
         motivoObservacion: null,
     },
     {
@@ -370,7 +370,7 @@ const ANIMALES_SEED = [
         establecimientoNacimientoRenspa: exports.E1,
         fechaIdentificacion: "2026-02-20",
         pesoKg: 352,
-        estadoSanitario: "Apto",
+        estadoSanitario: "Aprobado",
         motivoObservacion: null,
     },
     {
@@ -384,7 +384,7 @@ const ANIMALES_SEED = [
         establecimientoNacimientoRenspa: exports.E1,
         fechaIdentificacion: "2025-04-10",
         pesoKg: 445,
-        estadoSanitario: "Apto",
+        estadoSanitario: "Aprobado",
         motivoObservacion: null,
     },
     {
@@ -398,7 +398,7 @@ const ANIMALES_SEED = [
         establecimientoNacimientoRenspa: exports.E1,
         fechaIdentificacion: "2025-04-10",
         pesoKg: 458,
-        estadoSanitario: "Apto",
+        estadoSanitario: "Aprobado",
         motivoObservacion: null,
     },
     {
@@ -440,7 +440,7 @@ const ANIMALES_SEED = [
         establecimientoNacimientoRenspa: exports.E4,
         fechaIdentificacion: "2025-05-10",
         pesoKg: 462,
-        estadoSanitario: "Apto",
+        estadoSanitario: "Aprobado",
         motivoObservacion: null,
     },
     {
@@ -454,7 +454,7 @@ const ANIMALES_SEED = [
         establecimientoNacimientoRenspa: exports.E4,
         fechaIdentificacion: "2026-01-25",
         pesoKg: 335,
-        estadoSanitario: "Apto",
+        estadoSanitario: "Aprobado",
         motivoObservacion: null,
     },
     {
@@ -468,7 +468,7 @@ const ANIMALES_SEED = [
         establecimientoNacimientoRenspa: exports.E5,
         fechaIdentificacion: "2026-02-10",
         pesoKg: 325,
-        estadoSanitario: "Apto",
+        estadoSanitario: "Aprobado",
         motivoObservacion: null,
     },
     {
@@ -482,7 +482,7 @@ const ANIMALES_SEED = [
         establecimientoNacimientoRenspa: exports.E5,
         fechaIdentificacion: "2026-02-10",
         pesoKg: 330,
-        estadoSanitario: "Apto",
+        estadoSanitario: "Aprobado",
         motivoObservacion: null,
     },
     {
@@ -496,7 +496,7 @@ const ANIMALES_SEED = [
         establecimientoNacimientoRenspa: exports.E1,
         fechaIdentificacion: "2025-04-20",
         pesoKg: 450,
-        estadoSanitario: "Apto",
+        estadoSanitario: "Aprobado",
         motivoObservacion: null,
     },
     {
@@ -510,7 +510,7 @@ const ANIMALES_SEED = [
         establecimientoNacimientoRenspa: exports.E2,
         fechaIdentificacion: "2025-04-25",
         pesoKg: 465,
-        estadoSanitario: "Apto",
+        estadoSanitario: "Aprobado",
         motivoObservacion: null,
     },
 ];
@@ -633,7 +633,7 @@ function buildMockSyncForCuit(cuitInput, persistencia = "memory_fallback") {
         syncedAt,
     }));
     const totalAnimales = animales.length;
-    const aptos = animales.filter((a) => a.estadoSanitario === "Apto").length;
+    const aptos = animales.filter((a) => a.estadoSanitario === "Aprobado").length;
     const observados = animales.filter((a) => a.estadoSanitario === "Observado").length;
     const conAlertaDeforestacionPre2020 = animales.filter((a) => a.geolocalizacionCrianza.zonaDeforestadaPre2020).length;
     const flujoDemo = observados > 0 || conAlertaDeforestacionPre2020 > 0

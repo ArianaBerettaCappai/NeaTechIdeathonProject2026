@@ -92,3 +92,35 @@ CREATE INDEX IF NOT EXISTS senasa_animales_estado_sanitario_idx ON senasa_animal
 
 ALTER TABLE senasa_animales ENABLE ROW LEVEL SECURITY;
 
+-- =============================================================================
+-- RF-3: Publicacion de lotes de animales aprobados
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS lotes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  productor_cuit TEXT NOT NULL,
+  precio_por_kg NUMERIC NOT NULL CHECK (precio_por_kg > 0),
+  peso_total_kg NUMERIC NOT NULL,
+  monto_total NUMERIC NOT NULL,
+  publicado_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS lotes_productor_cuit_idx ON lotes (productor_cuit);
+CREATE INDEX IF NOT EXISTS lotes_publicado_at_idx ON lotes (publicado_at);
+
+ALTER TABLE lotes ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS lote_animales (
+  lote_id UUID REFERENCES lotes(id) ON DELETE CASCADE,
+  animal_codigo TEXT NOT NULL,
+  productor_cuit TEXT NOT NULL,
+  peso_kg NUMERIC NOT NULL,
+  es_apto_ue BOOLEAN NOT NULL,
+  PRIMARY KEY (lote_id, animal_codigo)
+);
+
+CREATE INDEX IF NOT EXISTS lote_animales_lote_id_idx ON lote_animales (lote_id);
+CREATE INDEX IF NOT EXISTS lote_animales_productor_cuit_idx ON lote_animales (productor_cuit);
+CREATE INDEX IF NOT EXISTS lote_animales_animal_codigo_idx ON lote_animales (animal_codigo);
+
+ALTER TABLE lote_animales ENABLE ROW LEVEL SECURITY;

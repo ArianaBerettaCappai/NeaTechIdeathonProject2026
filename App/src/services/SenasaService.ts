@@ -60,7 +60,7 @@ export class SenasaService {
 
     const animales = saved.animales;
     const totalAnimales = animales.length;
-    const aptos = animales.filter((a) => a.estadoSanitario === "Apto").length;
+    const aptos = animales.filter((a) => a.estadoSanitario === "Aprobado").length;
     const observados = animales.filter(
       (a) => a.estadoSanitario === "Observado"
     ).length;
@@ -103,7 +103,7 @@ export class SenasaService {
       return {
         animales,
         totalAnimales: animales.length,
-        aptos: animales.filter((a) => a.estadoSanitario === "Apto").length,
+        aptos: animales.filter((a) => a.estadoSanitario === "Aprobado").length,
         observados: animales.filter((a) => a.estadoSanitario === "Observado")
           .length,
         conAlertaDeforestacionPre2020: animales.filter(
@@ -144,7 +144,7 @@ export class SenasaService {
       establecimientos,
       animales,
       totalAnimales: animales.length,
-      aptos: animales.filter((a) => a.estadoSanitario === "Apto").length,
+      aptos: animales.filter((a) => a.estadoSanitario === "Aprobado").length,
       observados: animales.filter((a) => a.estadoSanitario === "Observado")
         .length,
       conAlertaDeforestacionPre2020: animales.filter(

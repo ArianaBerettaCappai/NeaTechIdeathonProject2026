@@ -1,4 +1,4 @@
-export type EstadoSanitario = "Apto" | "Observado";
+export type EstadoSanitario = "Aprobado" | "Observado";
 export type TipoIdentificacion = "RFID" | "ANALOGICA";
 
 export interface Productor {
