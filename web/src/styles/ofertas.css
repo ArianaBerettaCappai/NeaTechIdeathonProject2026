@@ -60,7 +60,7 @@
 .mapas-panel h3 { font-size: 1.3rem; }
 .comparador { position: relative; height: clamp(320px, 52vh, 480px); border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: #1d2a22; isolation: isolate; }
 .comparador .mapa { position: absolute; inset: 0; }
-.mapa-top { clip-path: inset(0 0 0 35%); pointer-events: none; z-index: 400; }
+.mapa-top { position: absolute; inset: 0; pointer-events: none; z-index: 400; }
 .mapa-top .leaflet-tile-pane { filter: saturate(.7) hue-rotate(-8deg); }
 .swipe-line { position: absolute; top: 0; bottom: 0; left: 35%; width: 2px; margin-left: -1px; background: #fffcf4; box-shadow: 0 0 0 1px rgba(0,0,0,.25); z-index: 500; pointer-events: none; }
 .swipe-line::after { content: ""; position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: #fffcf4; box-shadow: 0 2px 8px rgba(0,0,0,.35); }
