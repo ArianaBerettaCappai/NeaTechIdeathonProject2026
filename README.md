@@ -83,10 +83,10 @@ Conjunto **ficticio** de datos para RENSPA, SENASA (DT-e) y SIGBIOTRAZA, ubicado
 
 ## Qué está validado y qué no
 
-| Validado | Hipótesis (sin comprobar) |
+| Medianamente validado | Hipótesis (sin comprobar) |
 | --- | --- |
-| El problema lo presentaron representantes del sector | Que el productor busque una solución así: muchos prefieren no declarar para evitar costos impositivos |
-| Desde 2026 el productor debe identificar electrónicamente igual | Que a todos les interesen los mercados internacionales |
+| El problema: lo presentaron representantes del sector, pero todavía no se contrastó con entrevistas a productores | Que el productor busque una solución así: muchos prefieren no declarar para evitar costos impositivos |
+| Desde 2026 el productor debe identificar electrónicamente igual (norma de SENASA) | Que a todos les interesen los mercados internacionales |
 | | Que alguien pague por el dossier y a qué precio |
 
 ## Entregables de la ideatón
