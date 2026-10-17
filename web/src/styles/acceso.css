@@ -1,7 +1,7 @@
 /* Estilos exclusivos de la página de acceso y registro */
-.auth-page { min-height: 100vh; background: linear-gradient(140deg, #f5f6f1 0%, #eef3ec 54%, #e5eee5 100%); }
+.auth-page { background: linear-gradient(140deg, #f5f6f1 0%, #eef3ec 54%, #e5eee5 100%); }
 .back-link { text-decoration: none; color: var(--green); font-size: .88rem; font-weight: 800; }
-.auth-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(410px, .9fr); align-items: center; gap: clamp(35px, 7vw, 95px); min-height: calc(100vh - 150px); padding-top: 52px; padding-bottom: 60px; }
+.auth-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(410px, .9fr); align-items: center; gap: clamp(35px, 7vw, 95px); padding-top: 52px; padding-bottom: 60px; }
 .auth-intro { max-width: 550px; }
 .auth-intro h1 { font-size: clamp(2.5rem, 4.6vw, 4rem); }
 .auth-intro h1 span { color: #628168; }
@@ -29,7 +29,7 @@
 .form-two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-two-columns > div { min-width: 0; }
 .password-wrap { position: relative; }
-.password-wrap input { padding-right: 51px; }
+.password-wrap input { width: 100%; padding-right: 51px; }
 .password-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: 0; color: var(--green); font-size: .76rem; font-weight: 800; padding: 5px; cursor: pointer; }
 .form-options { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 14px 0 18px; }
 .remember-option { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: .73rem; }
