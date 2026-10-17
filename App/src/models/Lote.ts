@@ -1,4 +1,5 @@
 export type PublicarLoteInput = {
+  titulo: string;
   productorCuit: string;
   animalCodigos: string[];
   precioPorKg: number;
@@ -6,12 +7,14 @@ export type PublicarLoteInput = {
 
 export interface LotePublicado {
   id: string;
+  titulo: string;
   productorCuit: string;
   precioPorKg: number;
   animales: { animalCodigo: string; pesoKg: number; esAptoUe: boolean }[];
   pesoTotalKg: number;
   montoTotal: number;
   publicadoAt: string;
+  imagenUrl: string | null;
 }
 
 // Un animal es apto para exportar a la UE solo si su estado sanitario es "Aprobado".

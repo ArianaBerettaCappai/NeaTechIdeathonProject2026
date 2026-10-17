@@ -4,6 +4,7 @@ import { LoteRepository } from "./LoteRepository";
 
 interface LoteRow {
   id: string;
+  titulo: string | null;
   productor_cuit: string;
   precio_por_kg: number | string;
   peso_total_kg: number | string;
@@ -25,6 +26,7 @@ function rowToLotePublicado(
 ): LotePublicado {
   return {
     id: loteRow.id,
+    titulo: loteRow.titulo ?? "",
     productorCuit: loteRow.productor_cuit,
     precioPorKg: Number(loteRow.precio_por_kg),
     animales: animalRows.map((a) => ({
@@ -35,6 +37,7 @@ function rowToLotePublicado(
     pesoTotalKg: Number(loteRow.peso_total_kg),
     montoTotal: Number(loteRow.monto_total),
     publicadoAt: loteRow.publicado_at,
+    imagenUrl: null,
   };
 }
 
@@ -52,6 +55,13 @@ export class SupabaseLoteRepository implements LoteRepository {
     return cloned;
   }
 
+  private listarDesdeMemoria(): LotePublicado[] {
+    return [...this.memoryLotesById.values()].map((lote) => ({
+      ...lote,
+      animales: lote.animales.map((a) => ({ ...a })),
+    }));
+  }
+
   async guardarLote(lote: LotePublicado): Promise<LotePublicado> {
     const memorySaved = this.saveToMemory(lote);
 
@@ -62,6 +72,7 @@ export class SupabaseLoteRepository implements LoteRepository {
     try {
       const publicadoAt = lote.publicadoAt || new Date().toISOString();
       const lotePayload: Record<string, unknown> = {
+        titulo: lote.titulo,
         productor_cuit: lote.productorCuit,
         precio_por_kg: lote.precioPorKg,
         peso_total_kg: lote.pesoTotalKg,
@@ -113,6 +124,52 @@ export class SupabaseLoteRepository implements LoteRepository {
       return this.saveToMemory(persisted);
     } catch {
       return memorySaved;
+    }
+  }
+
+  async listarLotes(): Promise<LotePublicado[]> {
+    if (!this.client) {
+      return this.listarDesdeMemoria();
+    }
+
+    try {
+      const { data: lotesData, error: lotesError } = await this.client
+        .from("lotes")
+        .select("*")
+        .order("publicado_at", { ascending: false });
+
+      if (lotesError || !lotesData) {
+        return this.listarDesdeMemoria();
+      }
+
+      const lotesRows = lotesData as LoteRow[];
+      if (lotesRows.length === 0) {
+        return [];
+      }
+
+      const { data: animalesData, error: animalesError } = await this.client
+        .from("lote_animales")
+        .select("*")
+        .in(
+          "lote_id",
+          lotesRows.map((l) => l.id)
+        );
+
+      if (animalesError || !animalesData) {
+        return this.listarDesdeMemoria();
+      }
+
+      const animalesRows = animalesData as LoteAnimalRow[];
+      return lotesRows.map((loteRow) =>
+        this.saveToMemory(
+          rowToLotePublicado(
+            loteRow,
+            animalesRows.filter((a) => a.lote_id === loteRow.id)
+          )
+        )
+      );
+    } catch {
+      return this.listarDesdeMemoria();
     }
   }
 }
