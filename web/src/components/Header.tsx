@@ -1,12 +1,21 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { esVendedor } from "../lib/sesion";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { cerrarSesion, esVendedor, leerUsuario } from "../lib/sesion";
 
 // Cierra el menú móvil al elegir una opción.
 export function Header() {
   const [abierto, setAbierto] = useState(false);
+  const [usuario, setUsuario] = useState(leerUsuario);
+  const navigate = useNavigate();
   const cerrar = () => setAbierto(false);
   const vendedor = esVendedor();
+
+  const salir = () => {
+    cerrarSesion();
+    setUsuario(null);
+    cerrar();
+    navigate("/");
+  };
 
   return (
     <header className="site-header">
@@ -32,8 +41,19 @@ export function Header() {
           <NavLink to="/" end onClick={cerrar}>Inicio</NavLink>
           <NavLink to="/ofertas" onClick={cerrar}>Ofertas</NavLink>
           {vendedor && <NavLink to="/vender" onClick={cerrar}>Vender</NavLink>}
-          <Link className="nav-auth-button nav-login-button" to="/acceso" onClick={cerrar}>Iniciar sesión</Link>
-          <Link className="nav-auth-button" to="/acceso?modo=registro" onClick={cerrar}>Registrarse</Link>
+          {usuario ? (
+            <>
+              <span className="nav-usuario">Hola, {usuario.nombre}</span>
+              <button className="nav-auth-button nav-login-button" type="button" onClick={salir}>
+                Cerrar sesión
+              </button>
+            </>
+          ) : (
+            <>
+              <Link className="nav-auth-button nav-login-button" to="/acceso" onClick={cerrar}>Iniciar sesión</Link>
+              <Link className="nav-auth-button" to="/acceso?modo=registro" onClick={cerrar}>Registrarse</Link>
+            </>
+          )}
         </nav>
       </div>
     </header>

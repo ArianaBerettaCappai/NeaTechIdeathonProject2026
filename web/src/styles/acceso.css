@@ -68,6 +68,6 @@
 /* Identidad VAKA RAPÉ */
 .auth-page { background:#f1ead8; }
 .auth-page .site-header { background:rgba(241,234,216,.95); }
-.auth-page .brand-logo { display:block; width:58px; height:48px; object-fit:contain; border-radius:8px; mix-blend-mode:multiply; }
+.auth-page .brand-logo { display:block; width:88px; height:74px; object-fit:contain; border-radius:8px; mix-blend-mode:multiply; }
 .auth-page .brand strong { letter-spacing:.035em; }
 .auth-page .auth-intro h1 span { color:#98602d; }

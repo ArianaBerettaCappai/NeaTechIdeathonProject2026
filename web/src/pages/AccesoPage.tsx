@@ -1,5 +1,5 @@
 import { useState, type SyntheticEvent } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import {
   ErrorApi,
@@ -103,6 +103,7 @@ function PanelLogin({ onCambiar }: { onCambiar: () => void }) {
   const [recordar, setRecordar] = useState(() => Boolean(leerEmailRecordado()));
   const [mostrar, setMostrar] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  const navigate = useNavigate();
   const [mensaje, setMensaje] = useState<Mensaje>(SIN_MENSAJE);
 
   const enviar = async (evento: SyntheticEvent) => {
@@ -116,7 +117,7 @@ function PanelLogin({ onCambiar }: { onCambiar: () => void }) {
     try {
       const respuesta = await iniciarSesion(email.trim(), password);
       guardarSesion(respuesta);
-      setMensaje({ texto: `¡Bienvenido/a, ${respuesta.user.nombre}! Sesión iniciada correctamente.`, tono: "success" });
+      navigate("/", { replace: true });
     } catch (error) {
       setMensaje({ texto: error instanceof ErrorApi ? error.message : "No se pudo iniciar sesión.", tono: "error" });
     } finally {
@@ -185,6 +186,7 @@ function PanelRegistro({ onCambiar }: { onCambiar: () => void }) {
   const [campos, setCampos] = useState(CAMPOS_VACIOS);
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  const navigate = useNavigate();
   const [mensaje, setMensaje] = useState<Mensaje>(SIN_MENSAJE);
 
   const cambiar = (campo: keyof typeof CAMPOS_VACIOS) => (evento: { target: { value: string } }) =>
@@ -208,7 +210,7 @@ function PanelRegistro({ onCambiar }: { onCambiar: () => void }) {
       guardarSesion(respuesta);
       setCampos(CAMPOS_VACIOS);
       setAceptaTerminos(false);
-      setMensaje({ texto: `¡Cuenta creada con éxito, ${respuesta.user.nombre}! Tus datos fueron guardados en Supabase.`, tono: "success" });
+      navigate("/", { replace: true });
     } catch (error) {
       setMensaje({ texto: error instanceof ErrorApi ? error.message : "No se pudo completar el registro.", tono: "error" });
     } finally {

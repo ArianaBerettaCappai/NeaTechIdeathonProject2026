@@ -18,5 +18,15 @@ export function leerUsuario(): UsuarioPublico | null {
   }
 }
 
+// Borra la sesión guardada. Si el navegador bloquea el almacenamiento, no hay nada que borrar.
+export function cerrarSesion(): void {
+  try {
+    localStorage.removeItem("vakaRapeToken");
+    localStorage.removeItem("vakaRapeUser");
+  } catch {
+    /* almacenamiento no disponible */
+  }
+}
+
 // Solo el vendedor (productor) publica ofertas y ve su panel de rodeo.
 export const esVendedor = (): boolean => leerUsuario()?.rol === "vendedor" && leerToken() !== null;
