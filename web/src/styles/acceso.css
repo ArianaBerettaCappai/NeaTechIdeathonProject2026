@@ -1,0 +1,73 @@
+/* Estilos exclusivos de la página de acceso y registro */
+.auth-page { background: linear-gradient(140deg, #f5f6f1 0%, #eef3ec 54%, #e5eee5 100%); }
+.back-link { text-decoration: none; color: var(--green); font-size: .88rem; font-weight: 800; }
+.auth-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(410px, .9fr); align-items: center; gap: clamp(35px, 7vw, 95px); padding-top: 52px; padding-bottom: 60px; }
+.auth-intro { max-width: 550px; }
+.auth-intro h1 { font-size: clamp(2.5rem, 4.6vw, 4rem); }
+.auth-intro h1 span { color: #628168; }
+.auth-intro > p:not(.eyebrow):not(.auth-illustration-note) { max-width: 510px; color: var(--muted); font-size: 1.05rem; line-height: 1.8; }
+.auth-benefits { display: grid; gap: 19px; margin-top: 32px; }
+.auth-benefits > div { display: flex; align-items: flex-start; gap: 13px; }
+.auth-benefits > div > span:first-child { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 9px; background: #dcebdd; color: var(--green); font-weight: 900; flex-shrink: 0; }
+.auth-benefits strong,.auth-benefits small { display: block; }
+.auth-benefits strong { font-size: .9rem; }
+.auth-benefits small { color: var(--muted); font-size: .8rem; margin-top: 2px; }
+.auth-illustration-note { margin-top: 35px; color: #7a887b; font-size: .75rem; }
+.auth-card { position: relative; overflow: hidden; background: white; border: 1px solid #dfe7dc; border-radius: 22px; padding: 25px; box-shadow: 0 24px 65px rgba(33,77,53,.11); }
+.auth-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 26px; }
+.switch-tab { border: 1.5px solid #cfd9cc; background: white; border-radius: 12px; padding: 13px 10px; color: var(--green); font-size: .88rem; font-weight: 800; cursor: pointer; transition: background .2s, color .2s, border-color .2s, box-shadow .2s, transform .15s; }
+.switch-tab:hover { border-color: var(--green); background: #f4f8f3; }
+.switch-tab:active { transform: translateY(1px); }
+.switch-tab:focus-visible { outline: 3px solid #98602d55; outline-offset: 2px; }
+.switch-tab[aria-selected="true"] { background: var(--green); border-color: var(--green); color: white; box-shadow: 0 6px 16px rgba(33,77,53,.22); }
+.auth-panel h2 { font-size: 1.8rem; margin-bottom: 8px; }
+.auth-panel .eyebrow { margin-bottom: 8px; font-size: .66rem; }
+.auth-panel-intro { color: var(--muted); font-size: .86rem; margin-bottom: 21px; }
+.auth-panel form > .field-label,.establishment-fields .field-label { margin-top: 13px; }
+.auth-panel input:not([type="checkbox"]),.auth-panel select { min-height: 43px; }
+.auth-panel input::placeholder { color: #a2ada3; }
+.form-two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-two-columns > div { min-width: 0; }
+.password-wrap { position: relative; }
+.password-wrap input { width: 100%; padding-right: 51px; }
+.password-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: 0; color: var(--green); font-size: .76rem; font-weight: 800; padding: 5px; cursor: pointer; }
+.form-options { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 14px 0 18px; }
+.remember-option { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: .73rem; }
+.remember-option input,.terms-option input { accent-color: var(--green); }
+.text-button { border: 0; padding: 0; background: none; color: var(--green); font-size: .78rem; font-weight: 800; text-decoration: none; cursor: pointer; }
+.text-button:hover { text-decoration: underline; }
+.auth-submit { margin-top: 14px; min-height: 46px; }
+.auth-message { min-height: 1.4em; margin: 10px 0 0; font-size: .79rem; color: var(--muted); overflow-wrap: anywhere; }
+.auth-message.error { color: var(--red); }
+.auth-message.success { color: #28613c; background: #e8f4e9; padding: 10px 12px; border-radius: 9px; }
+.switch-prompt { text-align: center; color: var(--muted); font-size: .8rem; margin: 22px 0 0; }
+.switch-prompt .text-button { margin-left: 3px; }
+.terms-option { display: flex; align-items: flex-start; gap: 8px; margin-top: 16px; color: var(--muted); font-size: .73rem; line-height: 1.45; }
+.terms-option input { margin-top: 3px; flex-shrink: 0; }
+.establishment-fields { padding: 1px 12px 12px; margin-top: 12px; border-left: 3px solid #dcebdd; background: #f8faf7; border-radius: 0 8px 8px 0; }
+.establishment-fields .field-label:first-child { padding-top: 10px; }
+.auth-footer { border-top: 1px solid #dce3d9; }
+@media (max-width: 900px) {
+  .auth-main { grid-template-columns: 1fr; max-width: 650px; min-height: 0; gap: 25px; padding-top: 42px; }
+  .auth-intro { max-width: none; }
+  .auth-intro h1 { font-size: clamp(2.4rem, 6vw, 3.5rem); }
+  .auth-benefits { grid-template-columns: 1fr 1fr; gap: 15px; }
+  .auth-benefits > div:last-child { grid-column: 1 / -1; }
+  .auth-illustration-note { margin-top: 20px; }
+}
+@media (max-width: 520px) {
+  .auth-main { padding-top: 30px; }
+  .auth-card { padding: 18px; border-radius: 17px; }
+  .auth-benefits { grid-template-columns: 1fr; }
+  .auth-benefits > div:last-child { grid-column: auto; }
+  .form-two-columns { grid-template-columns: 1fr; gap: 0; }
+  .form-options { align-items: flex-start; flex-direction: column; }
+  .auth-footer { gap: 10px; }
+}
+
+/* Identidad VAKA RAPÉ */
+.auth-page { background:#f1ead8; }
+.auth-page .site-header { background:rgba(241,234,216,.95); }
+.auth-page .brand-logo { display:block; width:auto; height:72px; object-fit:contain; border-radius:8px; mix-blend-mode:multiply; }
+.auth-page .brand strong { letter-spacing:.035em; }
+.auth-page .auth-intro h1 span { color:#98602d; }

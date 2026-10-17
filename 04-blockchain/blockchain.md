@@ -1,4 +1,4 @@
-# Blockchain: sí o no
+# lockchain: sí o no
 
 ## Respuesta
 **No hace falta para esta etapa.** Un sello de integridad (hash SHA-256) del expediente cubre la necesidad de "probar que no se modificó". Anclar ese hash en una cadena pública queda como mejora opcional posterior.
