@@ -5,7 +5,7 @@ import { TarjetaOferta } from "../components/TarjetaOferta";
 import { Notice } from "../components/inicio/Notice";
 import { TuRodeo } from "../components/inicio/TuRodeo";
 import { moneda, numero } from "../lib/format";
-import { esAptoUE, pesoTotal, valorLote, visiblesPara } from "../lib/ofertas";
+import { pesoTotal, valorLote, visiblesPara } from "../lib/ofertas";
 import { esVendedor } from "../lib/sesion";
 import { useLotes } from "../lib/senasa";
 
@@ -16,7 +16,7 @@ const PASOS = [
   },
   {
     titulo: "Revisá cada animal",
-    texto: "Mirá su crianza, sus movimientos entre campos y si en esos lugares hubo deforestación.",
+    texto: "Mirá su crianza, sus vacunas y sus movimientos entre campos en el mapa.",
   },
   {
     titulo: "Coordiná la compra",
@@ -25,8 +25,8 @@ const PASOS = [
 ];
 
 export function InicioPage() {
-  const { lotes: todos, productores, error } = useLotes();
-  if (!todos || !productores) return <EstadoDatos error={error} />;
+  const { lotes: todos, error } = useLotes();
+  if (!todos) return <EstadoDatos error={error} />;
 
   const vendedor = esVendedor();
   const lotes = visiblesPara(todos, vendedor);
@@ -46,8 +46,7 @@ export function InicioPage() {
             <span>con toda su historia a la vista.</span>
           </h1>
           <p className="hero-text">
-            Compra directa de lotes del Nordeste. Por cada animal ves dónde se crió, cada movimiento entre campos y si en esos
-            lugares hubo deforestación.
+            Compra directa de lotes del Nordeste. Por cada animal ves dónde se crió, sus vacunas y cada movimiento entre campos.
           </p>
           <div className="hero-actions">
             <Link className="button button-primary" to="/ofertas">
@@ -92,10 +91,8 @@ export function InicioPage() {
                 <span>por kg</span>
               </div>
               <div>
-                <strong>
-                  {destacado.animales.filter(esAptoUE).length}/{destacado.animales.length}
-                </strong>
-                <span>aptos UE</span>
+                <strong>{destacado.animales.length}</strong>
+                <span>animales</span>
               </div>
             </div>
             <Link className="button button-light button-full" to={`/ofertas/${destacado.id}`}>
@@ -128,7 +125,7 @@ export function InicioPage() {
         )}
       </section>
 
-      {vendedor && <TuRodeo productores={productores} />}
+      {vendedor && <TuRodeo />}
 
       <section className="section" id="como-comprar">
         <div className="section-heading">

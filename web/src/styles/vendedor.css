@@ -39,3 +39,11 @@
   .vender-form { padding: 16px; }
   .rodeo-grid { grid-template-columns: 1fr; }
 }
+
+/* Buscar el rodeo por CUIT: campo y botón en una fila. */
+.rodeo-buscar { margin-bottom: 18px; }
+.rodeo-buscar-fila { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.rodeo-buscar-campo { flex: 1; min-width: 220px; }
+.rodeo-buscar-fila input { width: 100%; }
+.animal-option-bloqueado { opacity: .85; cursor: default; }
+.animal-option-bloqueado .rodeo-motivos { margin-top: 6px; }

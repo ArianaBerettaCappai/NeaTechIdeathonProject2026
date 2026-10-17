@@ -5,11 +5,9 @@ import { Layout } from "../components/Layout";
 import { ErrorApi } from "../lib/api";
 import { ACEPTA_IMAGEN, leerImagen } from "../lib/imagen";
 import { numero } from "../lib/format";
-import { esAptoUE } from "../lib/ofertas";
-import { crearOferta, subirImagen, type LotePublicado } from "../lib/ofertasApi";
+import { crearOferta, pedirRodeo, subirImagen, type LotePublicado, type RodeoProductor } from "../lib/ofertasApi";
 import { esVendedor } from "../lib/sesion";
 import { invalidarLotes, useLotes } from "../lib/senasa";
-import type { ProductorRodeo } from "../types";
 
 type Tono = "" | "error" | "success";
 interface Mensaje {
@@ -21,9 +19,9 @@ const SIN_MENSAJE: Mensaje = { texto: "", tono: "" };
 
 // Crear una oferta es solo para vendedores; el resto vuelve al acceso.
 export function VenderPage() {
-  const { productores, error } = useLotes();
+  const { error, lotes } = useLotes();
   if (!esVendedor()) return <Navigate to="/acceso" replace />;
-  if (!productores) return <EstadoDatos error={error} />;
+  if (!lotes) return <EstadoDatos error={error} />;
 
   return (
     <Layout>
@@ -31,19 +29,21 @@ export function VenderPage() {
         <p className="eyebrow">PUBLICAR UN LOTE</p>
         <h1>Ofrecé tu hacienda exportable.</h1>
         <p className="section-intro">
-          Elegí el productor y los animales que cumplen los requisitos para la UE. La oferta aparece enseguida en la portada y en
-          las ofertas.
+          Ingresá tu CUIT para ver todo tu rodeo. Solo se pueden ofrecer los animales exportables a la UE; los demás muestran el
+          motivo.
         </p>
       </section>
-      <FormularioOferta productores={productores} />
+      <FormularioOferta />
     </Layout>
   );
 }
 
-function FormularioOferta({ productores }: { productores: ProductorRodeo[] }) {
+function FormularioOferta() {
   const navigate = useNavigate();
   const [titulo, setTitulo] = useState("");
   const [cuit, setCuit] = useState("");
+  const [rodeo, setRodeo] = useState<RodeoProductor | null>(null);
+  const [buscandoRodeo, setBuscandoRodeo] = useState(false);
   const [seleccionados, setSeleccionados] = useState<string[]>([]);
   const [precio, setPrecio] = useState("");
   const [imagen, setImagen] = useState<string | null>(null);
@@ -52,12 +52,22 @@ function FormularioOferta({ productores }: { productores: ProductorRodeo[] }) {
   // Si la oferta se creó pero la imagen falló, queda el enlace al lote para reintentar desde ahí.
   const [loteCreado, setLoteCreado] = useState<string | null>(null);
 
-  const productor = productores.find((p) => p.cuit === cuit);
-  const exportables = productor?.animales.filter(esAptoUE) ?? [];
+  const exportables = rodeo?.animales.filter((animal) => animal.exportable) ?? [];
+  const noExportables = rodeo?.animales.filter((animal) => !animal.exportable) ?? [];
 
-  const cambiarProductor = (valor: string) => {
-    setCuit(valor);
+  // No es un <form> propio: vive dentro del formulario de la oferta, y Enter no debe publicar.
+  const buscarRodeo = async () => {
+    setBuscandoRodeo(true);
+    setMensaje(SIN_MENSAJE);
     setSeleccionados([]);
+    try {
+      setRodeo(await pedirRodeo(cuit.trim()));
+    } catch (error) {
+      setRodeo(null);
+      setMensaje({ texto: error instanceof ErrorApi ? error.message : "No se pudo consultar el rodeo.", tono: "error" });
+    } finally {
+      setBuscandoRodeo(false);
+    }
   };
 
   const alternar = (codigo: string) =>
@@ -80,7 +90,7 @@ function FormularioOferta({ productores }: { productores: ProductorRodeo[] }) {
     evento.preventDefault();
     const precioPorKg = Number(precio);
     if (!titulo.trim()) return setMensaje({ texto: "Ponele un título a la oferta.", tono: "error" });
-    if (!productor) return setMensaje({ texto: "Elegí el productor.", tono: "error" });
+    if (!rodeo) return setMensaje({ texto: "Ingresá tu CUIT y consultá tu rodeo primero.", tono: "error" });
     if (!seleccionados.length) return setMensaje({ texto: "Elegí al menos un animal exportable.", tono: "error" });
     if (!(precioPorKg > 0)) return setMensaje({ texto: "El precio por kilo debe ser mayor a cero.", tono: "error" });
 
@@ -90,7 +100,7 @@ function FormularioOferta({ productores }: { productores: ProductorRodeo[] }) {
     try {
       lote = await crearOferta({
         titulo: titulo.trim(),
-        productorCuit: productor.cuit,
+        productorCuit: rodeo.productorCuit,
         animalCodigos: seleccionados,
         precioPorKg,
       });
@@ -123,32 +133,71 @@ function FormularioOferta({ productores }: { productores: ProductorRodeo[] }) {
         onChange={(evento) => setTitulo(evento.target.value)}
       />
 
-      <label className="field-label" htmlFor="productorOferta">Productor</label>
-      <select id="productorOferta" value={cuit} onChange={(evento) => cambiarProductor(evento.target.value)}>
-        <option value="">Seleccionar…</option>
-        {productores.map((p) => (
-          <option key={p.cuit} value={p.cuit}>
-            {p.nombre} · CUIT {p.cuit}
-          </option>
-        ))}
-      </select>
+      <div className="rodeo-buscar-fila">
+        <div className="rodeo-buscar-campo">
+          <label className="field-label" htmlFor="cuitOferta">Tu CUIT</label>
+          <input
+            id="cuitOferta"
+            type="text"
+            inputMode="numeric"
+            placeholder="20-99999903-3"
+            value={cuit}
+            onChange={(evento) => setCuit(evento.target.value)}
+            onKeyDown={(evento) => {
+              if (evento.key !== "Enter") return;
+              evento.preventDefault();
+              if (cuit.trim() && !buscandoRodeo) void buscarRodeo();
+            }}
+          />
+        </div>
+        <button
+          className="button button-outline"
+          type="button"
+          onClick={() => void buscarRodeo()}
+          disabled={buscandoRodeo || !cuit.trim()}
+        >
+          {buscandoRodeo ? "Buscando…" : "Ver mi rodeo"}
+        </button>
+      </div>
 
       <fieldset className="animales-picker">
-        <legend className="field-label">Animales exportables</legend>
-        {!productor && <p className="form-hint">Elegí un productor para ver sus animales exportables.</p>}
-        {productor && !exportables.length && (
-          <p className="form-hint">Este productor no tiene animales exportables a la UE.</p>
+        <legend className="field-label">Animales de tu rodeo</legend>
+        {!rodeo && <p className="form-hint">Ingresá tu CUIT para ver todos tus animales.</p>}
+        {rodeo && !rodeo.animales.length && <p className="form-hint">Este CUIT no tiene animales registrados.</p>}
+        {rodeo && rodeo.animales.length > 0 && (
+          <p className="form-hint">
+            {rodeo.productorNombre}: {exportables.length} de {rodeo.animales.length} animales son exportables.
+          </p>
         )}
         {exportables.map((animal) => (
-          <label className="animal-option" key={animal.id}>
-            <input type="checkbox" checked={seleccionados.includes(animal.id)} onChange={() => alternar(animal.id)} />
+          <label className="animal-option" key={animal.animalCodigo}>
+            <input
+              type="checkbox"
+              checked={seleccionados.includes(animal.animalCodigo)}
+              onChange={() => alternar(animal.animalCodigo)}
+            />
             <span>
-              <strong>{animal.id}</strong>
+              <strong>{animal.animalCodigo}</strong>
               <small>
-                {animal.categoria} · {numero.format(animal.pesoKg)} kg
+                {animal.categoria} · {animal.raza} · {numero.format(animal.pesoKg)} kg
               </small>
             </span>
           </label>
+        ))}
+        {noExportables.map((animal) => (
+          <div className="animal-option animal-option-bloqueado" key={animal.animalCodigo}>
+            <span>
+              <strong>{animal.animalCodigo}</strong>
+              <small>
+                {animal.categoria} · {animal.raza} · {numero.format(animal.pesoKg)} kg · no se puede ofrecer:
+              </small>
+              <ul className="rodeo-motivos">
+                {animal.motivosNoExportable.map((motivo) => (
+                  <li key={motivo}>{motivo}</li>
+                ))}
+              </ul>
+            </span>
+          </div>
         ))}
       </fieldset>
 

@@ -1,17 +1,14 @@
 import { Link } from "react-router-dom";
 import { moneda, numero } from "../lib/format";
-import { esAptoUE, pesoTotal, valorLote } from "../lib/ofertas";
+import { pesoTotal, valorLote } from "../lib/ofertas";
 import type { Lote } from "../types";
-import { Badge } from "./Badge";
 
 export function TarjetaOferta({ lote }: { lote: Lote }) {
-  const todosAptos = lote.animales.every(esAptoUE);
   return (
     <Link className="oferta-card" to={`/ofertas/${lote.id}`}>
       {lote.imagenUrl && <img className="oferta-imagen" src={lote.imagenUrl} alt={`Foto del lote ${lote.titulo}`} loading="lazy" />}
       <span className="oferta-top">
         <span className="oferta-code">{lote.id}</span>
-        <Badge nivel={todosAptos ? "ok" : "warn"}>{todosAptos ? "Apto UE" : "Revisar"}</Badge>
       </span>
       <h3>{lote.titulo}</h3>
       <p className="oferta-origen">

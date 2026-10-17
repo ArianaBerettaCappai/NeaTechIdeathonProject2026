@@ -84,6 +84,13 @@ export interface LoteFaena {
   animalesIds: string[];
 }
 
+export interface VacunaAnimal {
+  nombre: string;
+  fechaAplicacion: string;
+  vencimiento: string;
+  lote: string;
+}
+
 export interface AnimalSincronizado {
   id: string;
   animalCodigo: string;
@@ -105,6 +112,7 @@ export interface AnimalSincronizado {
   geolocalizacionCrianza: GeolocalizacionAnimal;
   movimientosIds: string[];
   loteId: string | null;
+  vacunas?: VacunaAnimal[];
   syncedAt: string;
 }
 

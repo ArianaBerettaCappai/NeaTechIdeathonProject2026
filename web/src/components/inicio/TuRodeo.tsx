@@ -1,69 +1,103 @@
+import { useState, type SyntheticEvent } from "react";
+import { ErrorApi } from "../../lib/api";
 import { numero } from "../../lib/format";
-import { esAptoUE } from "../../lib/ofertas";
-import type { ProductorRodeo } from "../../types";
+import { pedirRodeo, type RodeoProductor } from "../../lib/ofertasApi";
 import { Badge } from "../Badge";
 
-// Panel del vendedor: todo el rodeo del dataset agrupado por productor, con el motivo de cada animal no exportable.
-export function TuRodeo({ productores }: { productores: ProductorRodeo[] }) {
+// Panel del vendedor: ingresa su CUIT y ve todo su rodeo. Los animales no exportables muestran por qué.
+export function TuRodeo() {
+  const [cuit, setCuit] = useState("");
+  const [cargando, setCargando] = useState(false);
+  const [rodeo, setRodeo] = useState<RodeoProductor | null>(null);
+  const [error, setError] = useState("");
+
+  const buscar = async (evento: SyntheticEvent) => {
+    evento.preventDefault();
+    setCargando(true);
+    setError("");
+    try {
+      setRodeo(await pedirRodeo(cuit.trim()));
+    } catch (err) {
+      setRodeo(null);
+      setError(err instanceof ErrorApi ? err.message : "No se pudo consultar el rodeo.");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const exportables = rodeo?.animales.filter((animal) => animal.exportable).length ?? 0;
+
   return (
     <section className="section" id="tu-rodeo" aria-labelledby="tuRodeoTitulo">
       <div className="section-heading">
         <div>
           <p className="eyebrow">PANEL DEL PRODUCTOR</p>
           <h2 id="tuRodeoTitulo">Tu rodeo</h2>
+          <p className="section-intro">Ingresá tu CUIT para ver todos tus animales y, si alguno no es exportable, por qué.</p>
         </div>
       </div>
 
-      <div className="rodeo-grid">
-        {productores.map((productor) => {
-          const exportables = productor.animales.filter(esAptoUE).length;
-          return (
-            <article className="panel rodeo-productor" key={productor.cuit}>
-              <div className="panel-heading">
-                <div>
-                  <h3>{productor.nombre}</h3>
-                  <p>
-                    CUIT {productor.cuit} · {productor.provincia}
-                  </p>
-                </div>
-                <Badge nivel="neutral">
-                  {exportables}/{productor.animales.length} exportables
-                </Badge>
-              </div>
+      <form className="rodeo-buscar panel" onSubmit={buscar}>
+        <label className="field-label" htmlFor="cuitRodeo">CUIT del productor</label>
+        <div className="rodeo-buscar-fila">
+          <input
+            id="cuitRodeo"
+            type="text"
+            inputMode="numeric"
+            placeholder="20-99999903-3"
+            value={cuit}
+            onChange={(evento) => setCuit(evento.target.value)}
+          />
+          <button className="button button-primary" type="submit" disabled={cargando || !cuit.trim()}>
+            {cargando ? "Buscando…" : "Ver rodeo"}
+          </button>
+        </div>
+        {error && <p className="form-message error" role="alert">{error}</p>}
+      </form>
 
-              {productor.animales.length ? (
-                <ul className="rodeo-lista">
-                  {productor.animales.map((animal) => {
-                    const apto = esAptoUE(animal);
-                    return (
-                      <li className="rodeo-animal" key={animal.id}>
-                        <div className="rodeo-animal-top">
-                          <div>
-                            <strong>{animal.id}</strong>
-                            <small>
-                              {animal.categoria} · {numero.format(animal.pesoKg)} kg
-                            </small>
-                          </div>
-                          <Badge nivel={apto ? "ok" : "warn"}>{apto ? "Exportable" : "No exportable"}</Badge>
-                        </div>
-                        {!apto && (
-                          <ul className="rodeo-motivos">
-                            {animal.motivosNoExportable.map((motivo) => (
-                              <li key={motivo}>{motivo}</li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="form-hint">Este productor no tiene animales registrados.</p>
-              )}
-            </article>
-          );
-        })}
-      </div>
+      {rodeo && (
+        <article className="panel rodeo-productor">
+          <div className="panel-heading">
+            <div>
+              <h3>{rodeo.productorNombre}</h3>
+              <p>CUIT {rodeo.productorCuit}</p>
+            </div>
+            <Badge nivel="neutral">
+              {exportables}/{rodeo.animales.length} exportables
+            </Badge>
+          </div>
+
+          {rodeo.animales.length ? (
+            <ul className="rodeo-lista">
+              {rodeo.animales.map((animal) => (
+                <li className="rodeo-animal" key={animal.animalCodigo}>
+                  <div className="rodeo-animal-top">
+                    <div>
+                      <strong>{animal.animalCodigo}</strong>
+                      <small>
+                        {animal.categoria} · {animal.raza} · {animal.sexo === "M" ? "Macho" : "Hembra"} ·{" "}
+                        {numero.format(animal.pesoKg)} kg
+                      </small>
+                    </div>
+                    <Badge nivel={animal.exportable ? "ok" : "warn"}>
+                      {animal.exportable ? "Exportable" : "No exportable"}
+                    </Badge>
+                  </div>
+                  {!animal.exportable && (
+                    <ul className="rodeo-motivos">
+                      {animal.motivosNoExportable.map((motivo) => (
+                        <li key={motivo}>{motivo}</li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="form-hint">Este productor no tiene animales registrados.</p>
+          )}
+        </article>
+      )}
     </section>
   );
 }

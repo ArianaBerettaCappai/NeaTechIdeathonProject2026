@@ -10,6 +10,7 @@ import {
   Productor,
   SenasaSyncResult,
   TipoIdentificacion,
+  VacunaAnimal,
 } from "../models/Senasa";
 
 export const PRODUCTORES: Productor[] = [
@@ -619,6 +620,34 @@ function resolveEstablecimientoActual(
   return actual;
 }
 
+// Vacunas FICTICIAS para la demo. Fechas derivadas de la identificacion del animal.
+const VACUNAS_CATALOGO = [
+  { nombre: "Aftosa", vigenciaDias: 180 },
+  { nombre: "Brucelosis (RB51)", vigenciaDias: 365 },
+  { nombre: "Clostridiosis (7 vías)", vigenciaDias: 180 },
+];
+
+// Fecha de referencia de la demo: las vacunas quedan vigentes respecto de ese dia.
+const FECHA_REFERENCIA_VACUNAS = Date.UTC(2026, 9, 16);
+const DIA_MS = 24 * 60 * 60 * 1000;
+
+function buildVacunas(animalCodigo: string): VacunaAnimal[] {
+  const desfase = Number(animalCodigo.replace(/\D/g, "")) % 20; // distinto para cada animal
+  return VACUNAS_CATALOGO.map((vacuna, i) => {
+    const aplicada = new Date(FECHA_REFERENCIA_VACUNAS - (20 + desfase + i * 45) * DIA_MS);
+    const vencimiento = new Date(aplicada.getTime() + vacuna.vigenciaDias * DIA_MS);
+    // A005 tiene la antiaftosa vencida: coincide con su motivo de observacion sanitaria.
+    const vencimientoFinal =
+      animalCodigo === "A005" && vacuna.nombre === "Aftosa" ? "2026-03-01" : vencimiento.toISOString().slice(0, 10);
+    return {
+      nombre: vacuna.nombre,
+      fechaAplicacion: aplicada.toISOString().slice(0, 10),
+      vencimiento: vencimientoFinal,
+      lote: `FICT-VAC-${animalCodigo}-${i + 1}`,
+    };
+  });
+}
+
 const DEFAULT_SYNCED_AT = "2026-10-16T18:00:00.000Z";
 
 export const ANIMALES_MOCK: AnimalSincronizado[] = ANIMALES_SEED.map(
@@ -656,6 +685,7 @@ export const ANIMALES_MOCK: AnimalSincronizado[] = ANIMALES_SEED.map(
         seed.establecimientoNacimientoRenspa
       ),
       fechaIdentificacion: seed.fechaIdentificacion,
+      vacunas: buildVacunas(seed.animalCodigo),
       geolocalizacionCrianza: buildGeolocalizacionCrianza(
         seed.establecimientoNacimientoRenspa,
         idx

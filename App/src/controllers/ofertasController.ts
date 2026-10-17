@@ -56,6 +56,19 @@ export class OfertasController {
     }
   };
 
+  rodeo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const cuit = String(req.params.cuit ?? "");
+      if (cuit.replace(/\D/g, "").length !== 11) {
+        throw new AuthError("El CUIT debe tener 11 dígitos.", 400);
+      }
+      const rodeo = await this.loteService.rodeoDe(cuit);
+      res.status(200).json(rodeo);
+    } catch (error) {
+      next(toHttpError(error));
+    }
+  };
+
   listarImagenes = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const imagenes = await this.loteService.listarImagenes();

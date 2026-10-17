@@ -26,6 +26,7 @@ export interface DatasetSenasa {
     pesoKg: number;
     estadoSanitario: string;
     motivoObservacion: string | null;
+    vacunas?: { nombre: string; fechaAplicacion: string; vencimiento: string; lote: string }[];
     fechaNacimiento: string;
     fechaIdentificacion: string;
     establecimientoNacimientoRenspa: string;
@@ -60,6 +61,9 @@ const PRECIO_KG_PROVISORIO = 3.45;
 const UBICACION_FRIGORIFICO_PROVISORIA = { lat: -29.1433, lng: -59.265 }; // Goya, Corrientes (aprox.)
 
 const CUADRO_SEXO: Record<string, string> = { M: "Macho", H: "Hembra" };
+
+// Rango de peso alrededor del peso registrado (estimación: el peso de un animal vivo varía).
+const VARIACION_PESO = 0.05;
 
 const KM_POR_GRADO_LAT = 111;
 
@@ -166,10 +170,16 @@ function adaptarDataset(datos: DatasetSenasa): DatosOfertas {
       raza: animal.raza,
       nacimiento: animal.fechaNacimiento,
       pesoKg: animal.pesoKg,
+      pesoMinKg: Math.round(animal.pesoKg * (1 - VARIACION_PESO)),
+      pesoMaxKg: Math.round(animal.pesoKg * (1 + VARIACION_PESO)),
       identificacion: animal.caravana,
       titular: datos.productores.find((p) => p.id === animal.productorId)?.nombre ?? "Sin titular",
       estado_sanitario: animal.estadoSanitario,
-      sanidad: [], // el mock no trae documentos sanitarios
+      sanidad: (animal.vacunas ?? []).map((vacuna) => ({
+        tipo: `Vacuna ${vacuna.nombre} (aplicada ${vacuna.fechaAplicacion})`,
+        documento: vacuna.lote,
+        vence: vacuna.vencimiento,
+      })),
       paradas: tramos.map((tramo) => tramo.parada),
       motivosNoExportable: motivosDe(animal, tramos),
     };

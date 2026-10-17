@@ -10,6 +10,8 @@ export function buildOfertasRouter(ofertasController: OfertasController): Router
   router.post("/", requireAuth, requireRol("vendedor"), ofertasController.publicar);
 
   router.get("/imagenes", ofertasController.listarImagenes);
+  // Todo el rodeo de un CUIT, con el motivo de cada animal no exportable.
+  router.get("/rodeo/:cuit", requireAuth, requireRol("vendedor"), ofertasController.rodeo);
   // Unica ruta con cuerpo mayor a 100kb: el limite de 4mb aplica solo aca.
   router.post(
     "/:id/imagen",

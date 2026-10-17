@@ -20,6 +20,25 @@ export interface LotePublicado {
   imagenUrl: string | null;
 }
 
+// Un animal del rodeo de un CUIT, sea o no exportable.
+export interface AnimalRodeo {
+  animalCodigo: string;
+  caravana: string;
+  categoria: string;
+  raza: string;
+  sexo: "M" | "H";
+  pesoKg: number;
+  estadoSanitario: string;
+  exportable: boolean;
+  motivosNoExportable: string[];
+}
+
+export interface RodeoProductor {
+  productorCuit: string;
+  productorNombre: string;
+  animales: AnimalRodeo[];
+}
+
 export interface NuevaOferta {
   titulo: string;
   productorCuit: string;
@@ -50,6 +69,10 @@ export const pedirLotesPublicados = (): Promise<LotePublicado[]> =>
 
 export const pedirImagenes = (): Promise<Record<string, string>> =>
   pedir<{ imagenes: Record<string, string> }>("/api/ofertas/imagenes").then((datos) => datos.imagenes);
+
+// Todo el rodeo del CUIT (solo vendedores). Incluye los animales no exportables con su motivo.
+export const pedirRodeo = (cuit: string): Promise<RodeoProductor> =>
+  pedir<RodeoProductor>(`/api/ofertas/rodeo/${encodeURIComponent(cuit)}`, { headers: encabezados() });
 
 export const crearOferta = (oferta: NuevaOferta): Promise<LotePublicado> =>
   pedir<LotePublicado>("/api/ofertas", { method: "POST", headers: encabezados(), body: JSON.stringify(oferta) });

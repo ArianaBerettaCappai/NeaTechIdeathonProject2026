@@ -31,6 +31,9 @@ export interface AnimalOferta {
   raza: string;
   nacimiento: string;
   pesoKg: number;
+  // Rango estimado: el peso real de un animal vivo varía.
+  pesoMinKg: number;
+  pesoMaxKg: number;
   identificacion: string;
   titular: string;
   estado_sanitario: string;

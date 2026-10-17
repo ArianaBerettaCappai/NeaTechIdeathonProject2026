@@ -34,8 +34,8 @@ export function OfertasPage() {
           <p className="eyebrow">OFERTAS · LOTES PUBLICADOS</p>
           <h1>Hacienda con origen, lista para comprar.</h1>
           <p className="hero-text">
-            Cada lote muestra su peso, su precio por kilo y la historia de cada animal: dónde se crió, qué movimientos tuvo
-            y si en esos campos hubo deforestación.
+            Cada lote muestra su peso estimado, su precio por kilo y la historia de cada animal: dónde se crió, sus vacunas
+            y qué movimientos tuvo.
           </p>
         </div>
         <dl className="hero-stats">

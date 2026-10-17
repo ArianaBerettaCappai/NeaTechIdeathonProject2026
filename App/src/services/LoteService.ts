@@ -1,12 +1,14 @@
 import { randomUUID } from "crypto";
 import {
   buildMockSyncForCuit,
+  CUIT_ALIASES,
   DTES,
   ESTABLECIMIENTOS,
   FRIGORIFICOS,
   normalizeCuit,
+  PRODUCTORES,
 } from "../data/senasaMockData";
-import { esAptoUe, LotePublicado, PublicarLoteInput } from "../models/Lote";
+import { esAptoUe, LotePublicado, PublicarLoteInput, RodeoProductor } from "../models/Lote";
 import { AnimalSincronizado } from "../models/Senasa";
 import { LoteRepository } from "../repositories/LoteRepository";
 import { SenasaRepository } from "../repositories/SenasaRepository";
@@ -99,6 +101,38 @@ export class LoteService {
     };
 
     return this.loteRepository.guardarLote(lote);
+  }
+
+  // Todo el rodeo bajo un CUIT, sin filtrar: cada animal indica si es exportable y, si no, por que.
+  async rodeoDe(cuitInput: string): Promise<RodeoProductor> {
+    const productorCuit = normalizeCuit(cuitInput);
+    const canonical = CUIT_ALIASES[productorCuit] ?? productorCuit;
+    const productor = PRODUCTORES.find((p) => p.cuit === canonical);
+    if (!productor) {
+      throw new AuthError(`No hay un productor registrado con el CUIT ${productorCuit}.`, 404);
+    }
+
+    const sincronizado = await this.senasaRepository.findAnimalsByCuit(productorCuit);
+    const animales = sincronizado.length > 0 ? sincronizado : (buildMockSyncForCuit(productorCuit)?.animales ?? []);
+
+    return {
+      productorCuit,
+      productorNombre: productor.nombre,
+      animales: animales.map((animal) => {
+        const motivosNoExportable = this.motivosNoExportable(animal);
+        return {
+          animalCodigo: animal.animalCodigo,
+          caravana: animal.caravana,
+          categoria: animal.categoria,
+          raza: animal.raza,
+          sexo: animal.sexo,
+          pesoKg: animal.pesoKg,
+          estadoSanitario: animal.estadoSanitario,
+          exportable: motivosNoExportable.length === 0,
+          motivosNoExportable,
+        };
+      }),
+    };
   }
 
   async listarOfertas(): Promise<LotePublicado[]> {

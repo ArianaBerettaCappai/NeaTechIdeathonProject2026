@@ -1,10 +1,9 @@
 import { Link, Navigate, useParams } from "react-router-dom";
-import { Badge } from "../components/Badge";
 import { EstadoDatos } from "../components/EstadoDatos";
 import { Layout } from "../components/Layout";
 import { ImagenLote } from "../components/lote/ImagenLote";
 import { formatDate, moneda, numero } from "../lib/format";
-import { alertasDe, buscarLote, esAptoUE, pesoTotal, valorLote, visiblesPara } from "../lib/ofertas";
+import { buscarLote, pesoTotal, rangoPesoLote, tipoDeBovino, valorLote, visiblesPara } from "../lib/ofertas";
 import { esVendedor } from "../lib/sesion";
 import { useLotes } from "../lib/senasa";
 
@@ -15,6 +14,7 @@ export function LotePage() {
   if (!lotes) return <EstadoDatos error={error} />;
   const lote = buscarLote(visiblesPara(lotes, vendedor), loteId);
   if (!lote) return <Navigate to="/ofertas" replace />;
+  const rango = rangoPesoLote(lote);
 
   return (
     <Layout>
@@ -36,8 +36,10 @@ export function LotePage() {
         </div>
         <dl className="oferta-resumen">
           <div>
-            <dt>Peso total</dt>
-            <dd>{numero.format(pesoTotal(lote))} kg</dd>
+            <dt>Peso total estimado</dt>
+            <dd>
+              {numero.format(rango.min)}–{numero.format(rango.max)} kg
+            </dd>
           </div>
           <div>
             <dt>Precio por kg</dt>
@@ -58,39 +60,32 @@ export function LotePage() {
           <thead>
             <tr>
               <th scope="col">Animal</th>
-              <th scope="col">Categoría</th>
-              <th scope="col">Peso</th>
+              <th scope="col">Tipo de bovino</th>
+              <th scope="col">Peso estimado</th>
               <th scope="col">Identificación</th>
-              <th scope="col">Elegibilidad UE</th>
-              <th scope="col">Deforestación</th>
             </tr>
           </thead>
           <tbody>
-            {lote.animales.map((animal) => {
-              const alertas = alertasDe(animal).length;
-              return (
-                <tr key={animal.id}>
-                  <td>
-                    <Link className="animal-link" to={`/ofertas/animal/${animal.id}`}>
-                      {animal.id}
-                    </Link>
-                  </td>
-                  <td>
-                    {animal.categoria} · {animal.sexo}
-                  </td>
-                  <td>{numero.format(animal.pesoKg)} kg</td>
-                  <td>{animal.identificacion}</td>
-                  <td>
-                    <Badge nivel={esAptoUE(animal) ? "ok" : "warn"}>es_apto_ue: {String(esAptoUE(animal))}</Badge>
-                  </td>
-                  <td>{alertas ? <Badge nivel="bad">{alertas} alerta(s)</Badge> : <Badge nivel="ok">Sin alertas</Badge>}</td>
-                </tr>
-              );
-            })}
+            {lote.animales.map((animal) => (
+              <tr key={animal.id}>
+                <td>
+                  <Link className="animal-link" to={`/ofertas/animal/${animal.id}`}>
+                    {animal.id}
+                  </Link>
+                </td>
+                <td>{tipoDeBovino(animal)}</td>
+                <td>
+                  {numero.format(animal.pesoMinKg)}–{numero.format(animal.pesoMaxKg)} kg
+                </td>
+                <td>{animal.identificacion}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
-      <p className="disclaimer">La elegibilidad UE es una regla simple del prototipo (estado sanitario Aprobado), no una certificación.</p>
+      <p className="disclaimer">
+        Peso total de referencia: {numero.format(pesoTotal(lote))} kg. Los rangos son estimaciones, porque el peso de un animal vivo varía.
+      </p>
     </Layout>
   );
 }

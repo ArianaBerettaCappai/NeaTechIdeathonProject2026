@@ -4,6 +4,16 @@ import type { AnimalOferta, Lote, Parada } from "../types";
 export const esAptoUE = (animal: AnimalOferta): boolean =>
   animal.estado_sanitario === "Aprobado" && animal.motivosNoExportable.length === 0;
 export const pesoTotal = (lote: Lote): number => lote.animales.reduce((total, animal) => total + animal.pesoKg, 0);
+// Rango de peso del lote: suma de los mínimos y de los máximos de cada animal.
+export const rangoPesoLote = (lote: Lote): { min: number; max: number } => ({
+  min: lote.animales.reduce((total, animal) => total + animal.pesoMinKg, 0),
+  max: lote.animales.reduce((total, animal) => total + animal.pesoMaxKg, 0),
+});
+// Por ejemplo: "Novillito · Braford · Macho".
+export const tipoDeBovino = (animal: AnimalOferta): string => {
+  const categoria = animal.categoria.charAt(0).toUpperCase() + animal.categoria.slice(1);
+  return `${categoria} · ${animal.raza} · ${animal.sexo}`;
+};
 export const valorLote = (lote: Lote): number => pesoTotal(lote) * lote.precioKg;
 export const alertasDe = (animal: AnimalOferta): Parada[] =>
   animal.paradas.filter((parada) => parada.deforestacion.alerta);

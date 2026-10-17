@@ -4,7 +4,7 @@ import { EstadoDatos } from "../components/EstadoDatos";
 import { Layout } from "../components/Layout";
 import { MapaComparador } from "../components/MapaComparador";
 import { formatDate, moneda, numero } from "../lib/format";
-import { alertasDe, buscarAnimal, esAptoUE, visiblesPara } from "../lib/ofertas";
+import { buscarAnimal, tipoDeBovino, visiblesPara } from "../lib/ofertas";
 import { esVendedor } from "../lib/sesion";
 import { useLotes } from "../lib/senasa";
 
@@ -16,7 +16,6 @@ export function AnimalPage() {
   const encontrado = buscarAnimal(visiblesPara(lotes, vendedor), animalId);
   if (!encontrado) return <Navigate to="/ofertas" replace />;
   const { lote, animal } = encontrado;
-  const alertas = alertasDe(animal);
 
   return (
     <Layout>
@@ -32,9 +31,7 @@ export function AnimalPage() {
         <div>
           <p className="eyebrow">FICHA INDIVIDUAL · {lote.id}</p>
           <h2 tabIndex={-1}>{animal.id}</h2>
-          <p className="section-intro">
-            {animal.categoria} {animal.raza} · {animal.sexo}
-          </p>
+          <p className="section-intro">{tipoDeBovino(animal)}</p>
         </div>
         <span className="oferta-precio">
           {moneda.format(lote.precioKg)} <small>por kg</small>
@@ -42,6 +39,16 @@ export function AnimalPage() {
       </header>
 
       <dl className="ficha-grid">
+        <div>
+          <dt>Tipo de bovino</dt>
+          <dd>{tipoDeBovino(animal)}</dd>
+        </div>
+        <div>
+          <dt>Peso estimado</dt>
+          <dd>
+            {numero.format(animal.pesoMinKg)}–{numero.format(animal.pesoMaxKg)} kg
+          </dd>
+        </div>
         <div>
           <dt>Identificación</dt>
           <dd>{animal.identificacion}</dd>
@@ -55,30 +62,16 @@ export function AnimalPage() {
           <dd>{formatDate(animal.nacimiento)}</dd>
         </div>
         <div>
-          <dt>Peso</dt>
-          <dd>{numero.format(animal.pesoKg)} kg</dd>
-        </div>
-        <div>
           <dt>Estado sanitario</dt>
           <dd>{animal.estado_sanitario}</dd>
-        </div>
-        <div>
-          <dt>es_apto_ue</dt>
-          <dd>
-            <Badge nivel={esAptoUE(animal) ? "ok" : "warn"}>{String(esAptoUE(animal))}</Badge>
-          </dd>
         </div>
       </dl>
 
       <section className="mapas-panel" aria-labelledby="mapasTitulo">
         <div className="panel-heading">
           <div>
-            <h3 id="mapasTitulo">Recorrido de crianza y deforestación</h3>
-            <p>
-              {alertas.length
-                ? `Hubo deforestación detectada en ${alertas.length} de ${animal.paradas.length} establecimientos del recorrido.`
-                : "No se detectó deforestación en los establecimientos del recorrido."}
-            </p>
+            <h3 id="mapasTitulo">Recorrido de crianza y movimientos</h3>
+            <p>Establecimientos por los que pasó el animal, hasta el frigorífico de destino.</p>
           </div>
           <Badge nivel="neutral">Capa simulada</Badge>
         </div>
@@ -95,13 +88,6 @@ export function AnimalPage() {
                 {parada.provincia} · {formatDate(parada.desde)} → {formatDate(parada.hasta)}
               </small>
               <small>Documento: {parada.documento}</small>
-              {parada.deforestacion.alerta ? (
-                <Badge nivel="bad">
-                  Deforestación: {parada.deforestacion.hectareas} ha ({parada.deforestacion.anio})
-                </Badge>
-              ) : (
-                <Badge nivel="ok">Sin alerta de deforestación</Badge>
-              )}
             </li>
           ))}
         </ol>
@@ -111,14 +97,14 @@ export function AnimalPage() {
       <section className="panel">
         <div className="panel-heading">
           <div>
-            <h3>Sanidad</h3>
-            <p>Documentos sanitarios declarados para el animal.</p>
+            <h3>Vacunas</h3>
+            <p>Vacunas registradas para el animal. Datos ficticios de demostración.</p>
           </div>
         </div>
         <ul className="gap-list">
           {animal.sanidad.map((doc) => (
             <li key={doc.documento}>
-              {doc.tipo} · {doc.documento} · vence {formatDate(doc.vence)}
+              {doc.tipo} · lote {doc.documento} · vence {formatDate(doc.vence)}
             </li>
           ))}
         </ul>
