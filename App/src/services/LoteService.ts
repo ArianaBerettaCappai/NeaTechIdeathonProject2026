@@ -1,19 +1,27 @@
 import { randomUUID } from "crypto";
-import { normalizeCuit } from "../data/senasaMockData";
+import {
+  DTES,
+  ESTABLECIMIENTOS,
+  FRIGORIFICOS,
+  normalizeCuit,
+} from "../data/senasaMockData";
 import { esAptoUe, LotePublicado, PublicarLoteInput } from "../models/Lote";
+import { AnimalSincronizado } from "../models/Senasa";
 import { LoteRepository } from "../repositories/LoteRepository";
 import { SenasaRepository } from "../repositories/SenasaRepository";
 import { AuthError } from "./AuthError";
+import { LoteImagenService } from "./LoteImagenService";
 
 export class LoteService {
   constructor(
     private readonly senasaRepository: SenasaRepository,
-    private readonly loteRepository: LoteRepository
+    private readonly loteRepository: LoteRepository,
+    private readonly loteImagenService: LoteImagenService
   ) {}
 
   async publicarLote(input: PublicarLoteInput): Promise<LotePublicado> {
     const productorCuit = normalizeCuit(input.productorCuit);
-    const { animalCodigos, precioPorKg } = input;
+    const { animalCodigos, precioPorKg, titulo } = input;
 
     if (!Number.isFinite(precioPorKg) || precioPorKg <= 0) {
       throw new AuthError("El precio por kg debe ser un número mayor a 0.", 400);
@@ -51,10 +59,18 @@ export class LoteService {
       return { animal, esApto: esAptoUe(animal.estadoSanitario) };
     });
 
-    const noAptos = animales.filter((a) => !a.esApto).map((a) => a.animal.animalCodigo);
-    if (noAptos.length > 0) {
+    const noExportables = animales
+      .map(({ animal }) => ({
+        codigo: animal.animalCodigo,
+        motivos: this.motivosNoExportable(animal),
+      }))
+      .filter((a) => a.motivos.length > 0);
+    if (noExportables.length > 0) {
+      const detalle = noExportables
+        .map((a) => `${a.codigo} (${a.motivos.join("; ")})`)
+        .join(", ");
       throw new AuthError(
-        `Los siguientes animales no tienen estado sanitario Aprobado y fueron rechazados: ${noAptos.join(", ")}.`,
+        `Los siguientes animales no son exportables a la UE y fueron rechazados: ${detalle}.`,
         422
       );
     }
@@ -68,14 +84,81 @@ export class LoteService {
 
     const lote: LotePublicado = {
       id: randomUUID(),
+      titulo,
       productorCuit,
       precioPorKg,
       animales: animalesLote,
       pesoTotalKg,
       montoTotal: pesoTotalKg * precioPorKg,
       publicadoAt: new Date().toISOString(),
+      imagenUrl: null,
     };
 
     return this.loteRepository.guardarLote(lote);
+  }
+
+  async listarOfertas(): Promise<LotePublicado[]> {
+    const [lotes, imagenes] = await Promise.all([
+      this.loteRepository.listarLotes(),
+      this.loteImagenService.listarImagenes(),
+    ]);
+
+    return lotes
+      .map((lote) => ({ ...lote, imagenUrl: imagenes[lote.id] ?? null }))
+      .sort((a, b) => b.publicadoAt.localeCompare(a.publicadoAt));
+  }
+
+  guardarImagen(loteId: string, dataUrl: string): Promise<string> {
+    return this.loteImagenService.guardarImagen(loteId, dataUrl);
+  }
+
+  listarImagenes(): Promise<Record<string, string>> {
+    return this.loteImagenService.listarImagenes();
+  }
+
+  // Motivos concretos por los que un animal no puede exportarse a la UE. Vacio = exportable.
+  motivosNoExportable(animal: AnimalSincronizado): string[] {
+    const motivos: string[] = [];
+
+    if (animal.estadoSanitario !== "Aprobado") {
+      motivos.push(
+        animal.motivoObservacion ?? `estado sanitario ${animal.estadoSanitario.toLowerCase()}`
+      );
+    }
+
+    if (animal.geolocalizacionCrianza.zonaDeforestadaPre2020) {
+      motivos.push(
+        `deforestación registrada antes del corte EUDR en ${animal.geolocalizacionCrianza.establecimientoNombre}`
+      );
+    }
+
+    const establecimientoCria = ESTABLECIMIENTOS.find(
+      (e) => e.renspa === animal.establecimientoNacimientoRenspa
+    );
+    if (!establecimientoCria?.habilitadoUe) {
+      motivos.push(
+        `${establecimientoCria?.nombre ?? animal.establecimientoNacimientoRenspa} no está habilitado para exportar a la UE`
+      );
+    }
+
+    for (const dte of DTES.filter((d) => d.animalesIds.includes(animal.animalCodigo))) {
+      if (dte.destinoTipo === "ESTABLECIMIENTO") {
+        const destino = ESTABLECIMIENTOS.find((e) => e.renspa === dte.destinoId);
+        if (!destino?.habilitadoUe) {
+          motivos.push(
+            `destino ${destino?.nombre ?? dte.destinoId} (${dte.id}) no está habilitado para exportar a la UE`
+          );
+        }
+      } else {
+        const destino = FRIGORIFICOS.find((f) => f.id === dte.destinoId);
+        if (!destino?.habilitadoUe) {
+          motivos.push(
+            `frigorífico ${destino?.nombre ?? dte.destinoId} (${dte.id}) no está habilitado para exportar a la UE`
+          );
+        }
+      }
+    }
+
+    return motivos;
   }
 }

@@ -4,7 +4,13 @@ import { normalizeCuit } from "../data/senasaMockData";
 import { AuthError } from "../services/AuthError";
 import { LoteService } from "../services/LoteService";
 
-const publicarLoteSchema = z.object({
+export const publicarLoteSchema = z.object({
+  titulo: z
+    .string()
+    .trim()
+    .max(120, "El título no puede superar los 120 caracteres.")
+    .optional()
+    .default(""),
   productorCuit: z
     .string({
       required_error: "El CUIT del productor es obligatorio.",

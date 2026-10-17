@@ -124,3 +124,10 @@ CREATE INDEX IF NOT EXISTS lote_animales_productor_cuit_idx ON lote_animales (pr
 CREATE INDEX IF NOT EXISTS lote_animales_animal_codigo_idx ON lote_animales (animal_codigo);
 
 ALTER TABLE lote_animales ENABLE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- RF-4: Ofertas publicadas por vendedores (titulo del lote; imagenes en App/uploads/lotes)
+-- =============================================================================
+
+-- Titulo visible de la oferta. Ejecutar en Supabase si la tabla lotes ya existia sin esta columna.
+ALTER TABLE lotes ADD COLUMN IF NOT EXISTS titulo TEXT NOT NULL DEFAULT '';
