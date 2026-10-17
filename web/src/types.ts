@@ -36,6 +36,8 @@ export interface AnimalOferta {
   estado_sanitario: string;
   sanidad: DocumentoSanitario[];
   paradas: Parada[];
+  // Lo que impide exportar al animal a la UE. Vacío = exportable.
+  motivosNoExportable: string[];
 }
 
 export interface Lote {

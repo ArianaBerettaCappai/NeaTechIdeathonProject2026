@@ -1,7 +1,8 @@
 import type { AnimalOferta, Lote, Parada } from "../types";
 
-// Regla RF-3: la elegibilidad UE es un booleano simple sobre el estado sanitario.
-export const esAptoUE = (animal: AnimalOferta): boolean => animal.estado_sanitario === "Aprobado";
+// Exportable a la UE: estado sanitario Aprobado y sin ningún motivo de bloqueo (deforestación, campo no habilitado).
+export const esAptoUE = (animal: AnimalOferta): boolean =>
+  animal.estado_sanitario === "Aprobado" && animal.motivosNoExportable.length === 0;
 export const pesoTotal = (lote: Lote): number => lote.animales.reduce((total, animal) => total + animal.pesoKg, 0);
 export const valorLote = (lote: Lote): number => pesoTotal(lote) * lote.precioKg;
 export const alertasDe = (animal: AnimalOferta): Parada[] =>

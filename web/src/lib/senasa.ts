@@ -5,7 +5,7 @@ import type { AnimalOferta, Deforestacion, Lote, Parada } from "../types";
 // Solo se tipan los campos que usa el frontend.
 export interface DatasetSenasa {
   productores: { id: string; nombre: string; provincia: string }[];
-  establecimientos: { renspa: string; nombre: string; provincia: string }[];
+  establecimientos: { renspa: string; nombre: string; provincia: string; habilitadoUe: boolean }[];
   frigorificos: { id: string; nombre: string; localidad: string; provincia: string }[];
   parcelas: {
     renspa: string;
@@ -24,6 +24,7 @@ export interface DatasetSenasa {
     raza: string;
     pesoKg: number;
     estadoSanitario: string;
+    motivoObservacion: string | null;
     fechaNacimiento: string;
     fechaIdentificacion: string;
     establecimientoNacimientoRenspa: string;
@@ -110,20 +111,43 @@ export function adaptarDataset(datos: DatasetSenasa): Lote[] {
     };
   };
 
-  const paradasDe = (animal: DatasetSenasa["animales"][number]): Parada[] => {
-    const nacimiento = paradaDe(
-      "Nacimiento y cría",
-      animal.establecimientoNacimientoRenspa,
-      animal.fechaNacimiento,
-      animal.fechaIdentificacion,
-      animal.caravana
-    );
-    const movimientos = datos.dtes
-      .filter((dte) => dte.destinoTipo === "ESTABLECIMIENTO" && dte.animalesIds.includes(animal.animalCodigo))
-      .map((dte) => paradaDe(formatearMotivo(dte.motivo), dte.destinoId, dte.fechaEmision, dte.fechaCierre, dte.id));
-    return [nacimiento, ...movimientos]
-      .filter((parada): parada is Parada => parada !== null)
-      .sort((a, b) => a.desde.localeCompare(b.desde));
+  // Cada tramo se guarda con su RENSPA para poder chequear la habilitación UE del campo.
+  const tramosDe = (animal: DatasetSenasa["animales"][number]): { renspa: string; parada: Parada }[] => {
+    const tramos = [
+      {
+        renspa: animal.establecimientoNacimientoRenspa,
+        parada: paradaDe("Nacimiento y cría", animal.establecimientoNacimientoRenspa, animal.fechaNacimiento, animal.fechaIdentificacion, animal.caravana),
+      },
+      ...datos.dtes
+        .filter((dte) => dte.destinoTipo === "ESTABLECIMIENTO" && dte.animalesIds.includes(animal.animalCodigo))
+        .map((dte) => ({
+          renspa: dte.destinoId,
+          parada: paradaDe(formatearMotivo(dte.motivo), dte.destinoId, dte.fechaEmision, dte.fechaCierre, dte.id),
+        })),
+    ];
+    return tramos
+      .filter((tramo): tramo is { renspa: string; parada: Parada } => tramo.parada !== null)
+      .sort((a, b) => a.parada.desde.localeCompare(b.parada.desde));
+  };
+
+  // Motivos concretos por los que el animal no puede exportarse a la UE.
+  const motivosDe = (animal: DatasetSenasa["animales"][number], tramos: { renspa: string; parada: Parada }[]): string[] => {
+    const motivos: string[] = [];
+    if (animal.estadoSanitario !== "Aprobado") {
+      motivos.push(animal.motivoObservacion ?? `Estado sanitario ${animal.estadoSanitario.toLowerCase()}`);
+    }
+    for (const { renspa, parada } of tramos) {
+      if (parada.deforestacion.alerta) {
+        motivos.push(
+          `Deforestación registrada antes del corte EUDR en ${parada.establecimiento} (${parada.deforestacion.hectareas} ha)`
+        );
+      }
+      const establecimiento = establecimientoDe(renspa);
+      if (establecimiento && !establecimiento.habilitadoUe) {
+        motivos.push(`${establecimiento.nombre} no está habilitado para exportar a la UE`);
+      }
+    }
+    return motivos;
   };
 
   return datos.lotes.map((loteFaena) => {
@@ -133,19 +157,23 @@ export function adaptarDataset(datos: DatasetSenasa): Lote[] {
     const productor = datos.productores.find((p) => p.id === animalesLote[0]?.productorId);
     const frigorifico = datos.frigorificos.find((f) => f.id === loteFaena.frigorificoId);
 
-    const animales: AnimalOferta[] = animalesLote.map((animal) => ({
-      id: animal.animalCodigo,
-      categoria: animal.categoria,
-      sexo: CUADRO_SEXO[animal.sexo] ?? animal.sexo,
-      raza: animal.raza,
-      nacimiento: animal.fechaNacimiento,
-      pesoKg: animal.pesoKg,
-      identificacion: animal.caravana,
-      titular: datos.productores.find((p) => p.id === animal.productorId)?.nombre ?? "Sin titular",
-      estado_sanitario: animal.estadoSanitario,
-      sanidad: [], // el mock no trae documentos sanitarios
-      paradas: paradasDe(animal),
-    }));
+    const animales: AnimalOferta[] = animalesLote.map((animal) => {
+      const tramos = tramosDe(animal);
+      return {
+        id: animal.animalCodigo,
+        categoria: animal.categoria,
+        sexo: CUADRO_SEXO[animal.sexo] ?? animal.sexo,
+        raza: animal.raza,
+        nacimiento: animal.fechaNacimiento,
+        pesoKg: animal.pesoKg,
+        identificacion: animal.caravana,
+        titular: datos.productores.find((p) => p.id === animal.productorId)?.nombre ?? "Sin titular",
+        estado_sanitario: animal.estadoSanitario,
+        sanidad: [], // el mock no trae documentos sanitarios
+        paradas: tramos.map((tramo) => tramo.parada),
+        motivosNoExportable: motivosDe(animal, tramos),
+      };
+    });
 
     return {
       id: loteFaena.id,
