@@ -8,6 +8,16 @@ export const valorLote = (lote: Lote): number => pesoTotal(lote) * lote.precioKg
 export const alertasDe = (animal: AnimalOferta): Parada[] =>
   animal.paradas.filter((parada) => parada.deforestacion.alerta);
 
+// Para quien compra: solo los animales exportables a la UE. Un lote sin ninguno no se muestra.
+// El vendedor ve el lote completo.
+export function visiblesPara(lotes: Lote[], vendedor: boolean): Lote[] {
+  if (vendedor) return lotes;
+  return lotes.flatMap((lote) => {
+    const aptos = lote.animales.filter(esAptoUE);
+    return aptos.length ? [{ ...lote, animales: aptos }] : [];
+  });
+}
+
 export const buscarLote = (lotes: Lote[], id: string): Lote | undefined => lotes.find((lote) => lote.id === id);
 
 export function buscarAnimal(lotes: Lote[], id: string): { lote: Lote; animal: AnimalOferta } | undefined {

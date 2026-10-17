@@ -1,0 +1,41 @@
+/* Vendedor: publicar lotes, imágenes de lote y panel "Tu rodeo". Reutiliza los tokens de base.css. */
+
+.oferta-imagen { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px; margin-bottom: 4px; background: var(--sand); }
+.lote-imagen { display: block; width: 100%; max-height: 360px; object-fit: cover; border-radius: 18px; margin: 28px 0 0; border: 1px solid var(--line); }
+
+.form-message { min-height: 1.4em; margin: 12px 0 0; font-size: .84rem; color: var(--muted); overflow-wrap: anywhere; }
+.form-message.error { color: var(--red); }
+.form-message.success { color: #28613c; background: #e8f4e9; padding: 10px 12px; border-radius: 9px; }
+.form-hint { color: var(--muted); font-size: .8rem; margin: 6px 0 0; }
+
+.vender-hero { padding: 56px 0 24px; max-width: 760px; }
+.vender-hero h1 { font-size: clamp(2.2rem, 4vw, 3.2rem); }
+.vender-form { max-width: 760px; margin: 18px 0 80px; }
+.vender-form input[type="text"], .vender-form input[type="number"] { margin-bottom: 4px; }
+.vender-form .form-two-columns { margin-top: 14px; }
+.vender-form .button-full { margin-top: 20px; }
+
+.animales-picker { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 14px 0 0; display: grid; gap: 8px; min-width: 0; }
+.animales-picker legend { padding: 0 6px; }
+.animal-option { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: .9rem; }
+.animal-option input { width: auto; margin-top: 4px; accent-color: var(--green); }
+.animal-option small { display: block; color: var(--muted); }
+
+.imagen-panel { margin: 22px 0 0; }
+.imagen-controles { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.imagen-controles input[type="file"] { flex: 1 1 260px; }
+.imagen-preview { display: block; width: 100%; max-width: 360px; margin-top: 14px; border-radius: 12px; border: 1px solid var(--line); }
+
+.rodeo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
+.rodeo-productor { margin-top: 0; }
+.rodeo-productor .panel-heading p { color: var(--muted); font-size: .84rem; margin: 0; }
+.rodeo-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.rodeo-animal { border-top: 1px solid var(--line); padding-top: 10px; }
+.rodeo-animal-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.rodeo-animal-top small { display: block; color: var(--muted); }
+.rodeo-motivos { margin: 8px 0 0; padding-left: 18px; color: #7a3b2f; font-size: .84rem; display: grid; gap: 4px; }
+
+@media (max-width: 640px) {
+  .vender-form { padding: 16px; }
+  .rodeo-grid { grid-template-columns: 1fr; }
+}

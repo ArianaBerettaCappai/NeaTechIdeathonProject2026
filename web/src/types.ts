@@ -44,9 +44,19 @@ export interface Lote {
   id: string;
   titulo: string;
   productor: string;
+  productorCuit: string;
   provincia: string;
   publicado: string;
   precioKg: number;
   frigorifico: { nombre: string; lat: number; lng: number };
+  animales: AnimalOferta[];
+  imagenUrl?: string;
+}
+
+// Productor del dataset con todo su rodeo (no solo lo ofertado).
+export interface ProductorRodeo {
+  cuit: string;
+  nombre: string;
+  provincia: string;
   animales: AnimalOferta[];
 }
