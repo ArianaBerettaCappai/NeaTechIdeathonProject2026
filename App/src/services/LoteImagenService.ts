@@ -1,6 +1,10 @@
 import fs from "fs/promises";
 import path from "path";
+import { isSupabaseConfigured, supabase } from "../config/supabaseClient";
 import { AuthError } from "./AuthError";
+
+// En produccion (Vercel) el disco no persiste: las imagenes van a un bucket publico de Supabase Storage.
+const BUCKET = "lotes";
 
 // Carpeta publica de uploads: App/uploads (servida en /uploads por express.static).
 export const UPLOADS_DIR = path.resolve(__dirname, "../../uploads");
@@ -38,6 +42,17 @@ export class LoteImagenService {
 
     const archivo = `${loteId}.${EXTENSIONES[formato]}`;
 
+    if (isSupabaseConfigured) {
+      const { data: existentes } = await supabase.storage.from(BUCKET).list("", { search: loteId });
+      const anteriores = (existentes ?? []).map((f) => f.name).filter((n) => path.parse(n).name === loteId);
+      if (anteriores.length) await supabase.storage.from(BUCKET).remove(anteriores);
+      const { error } = await supabase.storage
+        .from(BUCKET)
+        .upload(archivo, buffer, { contentType: `image/${formato === "jpeg" ? "jpeg" : formato}`, upsert: true });
+      if (error) throw new AuthError(`No se pudo guardar la imagen: ${error.message}`, 500);
+      return supabase.storage.from(BUCKET).getPublicUrl(archivo).data.publicUrl;
+    }
+
     await fs.mkdir(LOTES_DIR, { recursive: true });
     // Reemplaza la imagen anterior, aunque tuviera otra extension.
     await this.eliminarImagenes(loteId);
@@ -47,6 +62,19 @@ export class LoteImagenService {
   }
 
   async listarImagenes(): Promise<Record<string, string>> {
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase.storage.from(BUCKET).list("", { limit: 1000 });
+      if (error) return {};
+      const imagenes: Record<string, string> = {};
+      for (const f of data ?? []) {
+        const { name, ext } = path.parse(f.name);
+        if (EXTENSIONES_VALIDAS.has(ext.slice(1)) && LOTE_ID_REGEX.test(name)) {
+          imagenes[name] = supabase.storage.from(BUCKET).getPublicUrl(f.name).data.publicUrl;
+        }
+      }
+      return imagenes;
+    }
+
     let archivos: string[];
     try {
       archivos = await fs.readdir(LOTES_DIR);
