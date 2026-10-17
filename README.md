@@ -1,7 +1,7 @@
 # Legajo (nombre provisional)
 
 **Vertical:** Agro · **Escenario:** Ganadería · **Evento:** Ideathon NEA Tech 2026 (Corrientes)
-**Demo navegable:** `index.html` (se publica como GitHub Page) · **Presentación:** `presentacion/Legajo_Presentacion.pdf`
+**Demo navegable:** app React en `web/` (ver [Cómo ejecutar la demo](#cómo-ejecutar-la-demo)) · **Presentación:** `presentacion/Legajo_Presentacion.pdf`
 
 ## Frase del problema
 > El productor ganadero de Corrientes necesita **demostrar con evidencia verificable la identidad y el recorrido de sus animales** porque **los compradores de mercados como la Unión Europea lo exigen y hoy esa información está repartida en registros y papeles que no se conectan**.
@@ -20,13 +20,28 @@
 | Entregable | Dónde está |
 |---|---|
 | Presentación en PDF (problema, usuario, propuesta, tecnología, impacto) | `presentacion/Legajo_Presentacion.pdf` |
-| Demo navegable (función central: expediente de un lote con brechas, sanidad y sello verificable) | `index.html` |
+| Demo navegable (función central: expediente de un lote con brechas, sanidad y sello verificable) | `web/` (React) |
 | Sustento: fuentes, supuestos y limitaciones | `06-sustento/sustento.md` |
 
-## Cómo publicar la demo en GitHub Pages
-1. Subir esta carpeta a un repositorio de GitHub (rama `main`).
-2. En el repositorio: Settings → Pages → "Deploy from a branch" → rama `main`, carpeta `/ (root)`.
-3. La demo queda en `https://<usuario>.github.io/<repositorio>/`. No necesita servidor ni instalación.
+## Cómo ejecutar la demo
+El proyecto tiene dos partes: el frontend React (`web/`) y el backend Express (`App/`) con Supabase para el acceso.
+
+1. **Frontend** (portada, ofertas y expediente; no necesita backend):
+   ```sh
+   cd web
+   npm install
+   npm run dev
+   ```
+   Abrir `http://localhost:5173`.
+2. **Backend** (solo para iniciar sesión y registrarse). Copiar `App/.env.example` como `App/.env` y completar las credenciales de Supabase; después:
+   ```sh
+   cd App
+   npm install
+   npm run dev
+   ```
+   El frontend envía `/auth/*` al puerto 3000 mediante el proxy de Vite.
+
+Las ofertas, la deforestación y los datos del expediente son simulados. Los mapas usan imágenes satelitales de Esri, así que necesitan conexión a internet.
 
 ## Equipo
 - (completar nombres y roles)

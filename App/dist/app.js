@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createApp = createApp;
 const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
-const path_1 = __importDefault(require("path"));
 const env_1 = require("./config/env");
 const supabaseClient_1 = require("./config/supabaseClient");
 const authController_1 = require("./controllers/authController");
@@ -44,8 +43,6 @@ function createApp() {
     app.use("/senasa", senasaRouter);
     app.use("/api/senasa", senasaRouter);
     app.use("/api/senasa/lotes", loteRouter);
-    const frontendPath = path_1.default.resolve(__dirname, "../../Frontend");
-    app.use(express_1.default.static(frontendPath));
     app.use(errorHandler_1.errorHandler);
     return app;
 }
