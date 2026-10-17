@@ -4,17 +4,17 @@ import { EstadoDatos } from "../components/EstadoDatos";
 import { Layout } from "../components/Layout";
 import { ImagenLote } from "../components/lote/ImagenLote";
 import { formatDate, moneda, numero } from "../lib/format";
-import { alertasDe, buscarLote, esAptoUE, pesoTotal, valorLote } from "../lib/ofertas";
+import { alertasDe, buscarLote, esAptoUE, pesoTotal, valorLote, visiblesPara } from "../lib/ofertas";
 import { esVendedor } from "../lib/sesion";
 import { useLotes } from "../lib/senasa";
 
 export function LotePage() {
   const { loteId = "" } = useParams();
   const { lotes, error, recargar } = useLotes();
-  if (!lotes) return <EstadoDatos error={error} />;
-  const lote = buscarLote(lotes, loteId);
-  if (!lote) return <Navigate to="/ofertas" replace />;
   const vendedor = esVendedor();
+  if (!lotes) return <EstadoDatos error={error} />;
+  const lote = buscarLote(visiblesPara(lotes, vendedor), loteId);
+  if (!lote) return <Navigate to="/ofertas" replace />;
 
   return (
     <Layout>

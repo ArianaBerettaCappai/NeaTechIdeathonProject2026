@@ -4,14 +4,16 @@ import { EstadoDatos } from "../components/EstadoDatos";
 import { Layout } from "../components/Layout";
 import { MapaComparador } from "../components/MapaComparador";
 import { formatDate, moneda, numero } from "../lib/format";
-import { alertasDe, buscarAnimal, esAptoUE } from "../lib/ofertas";
+import { alertasDe, buscarAnimal, esAptoUE, visiblesPara } from "../lib/ofertas";
+import { esVendedor } from "../lib/sesion";
 import { useLotes } from "../lib/senasa";
 
 export function AnimalPage() {
   const { animalId = "" } = useParams();
   const { lotes, error } = useLotes();
+  const vendedor = esVendedor();
   if (!lotes) return <EstadoDatos error={error} />;
-  const encontrado = buscarAnimal(lotes, animalId);
+  const encontrado = buscarAnimal(visiblesPara(lotes, vendedor), animalId);
   if (!encontrado) return <Navigate to="/ofertas" replace />;
   const { lote, animal } = encontrado;
   const alertas = alertasDe(animal);

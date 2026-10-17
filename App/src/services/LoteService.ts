@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import {
+  buildMockSyncForCuit,
   DTES,
   ESTABLECIMIENTOS,
   FRIGORIFICOS,
@@ -41,7 +42,10 @@ export class LoteService {
       );
     }
 
-    const animalesDelRodeo = await this.senasaRepository.findAnimalsByCuit(productorCuit);
+    // Si el rodeo todavia no se sincronizo, usamos el rodeo simulado: es el mismo que muestra el dataset.
+    const rodeoSincronizado = await this.senasaRepository.findAnimalsByCuit(productorCuit);
+    const animalesDelRodeo =
+      rodeoSincronizado.length > 0 ? rodeoSincronizado : (buildMockSyncForCuit(productorCuit)?.animales ?? []);
     const animalesPorCodigo = new Map(
       animalesDelRodeo.map((a) => [a.animalCodigo, a])
     );
